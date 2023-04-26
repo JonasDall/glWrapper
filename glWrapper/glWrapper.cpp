@@ -1,5 +1,5 @@
 #include "glWrapper.hpp"
-#include "../tinygltf/stb_image.h"
+#include "../gltfPack/stb_image.h"
 
 // 
 // *SHADER
