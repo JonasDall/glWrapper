@@ -1,6 +1,0 @@
-[submodule "glm"]
-	path = glm
-	url = https://github.com/g-truc/glm
-[submodule "gltfPack"]
-	path = gltfPack
-	url = https://github.com/JonasDall/gltfPack
