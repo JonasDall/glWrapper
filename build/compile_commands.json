@@ -1,0 +1,14 @@
+[
+{
+  "directory": "C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe   -g -o CMakeFiles\\glWrapper.dir\\source\\glWrapper.cpp.obj -c C:\\Users\\jonas\\Documents\\Koding\\Workspaces\\glWrapper\\source\\glWrapper.cpp",
+  "file": "C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/source/glWrapper.cpp",
+  "output": "CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj"
+},
+{
+  "directory": "C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles/testProj.dir/includes_CXX.rsp -g -o CMakeFiles\\testProj.dir\\test\\main.cpp.obj -c C:\\Users\\jonas\\Documents\\Koding\\Workspaces\\glWrapper\\test\\main.cpp",
+  "file": "C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/test/main.cpp",
+  "output": "CMakeFiles/testProj.dir/test/main.cpp.obj"
+}
+]
