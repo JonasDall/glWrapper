@@ -69,6 +69,7 @@ include CMakeFiles/glWrapper.dir/progress.make
 include CMakeFiles/glWrapper.dir/flags.make
 
 CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj: CMakeFiles/glWrapper.dir/flags.make
+CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj: CMakeFiles/glWrapper.dir/includes_CXX.rsp
 CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj: C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/source/glWrapper.cpp
 CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj: CMakeFiles/glWrapper.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj"
@@ -82,17 +83,68 @@ CMakeFiles/glWrapper.dir/source/glWrapper.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/glWrapper.dir/source/glWrapper.cpp.s"
 	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\source\glWrapper.cpp -o CMakeFiles\glWrapper.dir\source\glWrapper.cpp.s
 
+CMakeFiles/glWrapper.dir/libs/tinygltf/stb.cpp.obj: CMakeFiles/glWrapper.dir/flags.make
+CMakeFiles/glWrapper.dir/libs/tinygltf/stb.cpp.obj: CMakeFiles/glWrapper.dir/includes_CXX.rsp
+CMakeFiles/glWrapper.dir/libs/tinygltf/stb.cpp.obj: C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/tinygltf/stb.cpp
+CMakeFiles/glWrapper.dir/libs/tinygltf/stb.cpp.obj: CMakeFiles/glWrapper.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/glWrapper.dir/libs/tinygltf/stb.cpp.obj"
+	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/glWrapper.dir/libs/tinygltf/stb.cpp.obj -MF CMakeFiles\glWrapper.dir\libs\tinygltf\stb.cpp.obj.d -o CMakeFiles\glWrapper.dir\libs\tinygltf\stb.cpp.obj -c C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\libs\tinygltf\stb.cpp
+
+CMakeFiles/glWrapper.dir/libs/tinygltf/stb.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/glWrapper.dir/libs/tinygltf/stb.cpp.i"
+	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\libs\tinygltf\stb.cpp > CMakeFiles\glWrapper.dir\libs\tinygltf\stb.cpp.i
+
+CMakeFiles/glWrapper.dir/libs/tinygltf/stb.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/glWrapper.dir/libs/tinygltf/stb.cpp.s"
+	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\libs\tinygltf\stb.cpp -o CMakeFiles\glWrapper.dir\libs\tinygltf\stb.cpp.s
+
+CMakeFiles/glWrapper.dir/libs/tinygltf/tinygltf.cpp.obj: CMakeFiles/glWrapper.dir/flags.make
+CMakeFiles/glWrapper.dir/libs/tinygltf/tinygltf.cpp.obj: CMakeFiles/glWrapper.dir/includes_CXX.rsp
+CMakeFiles/glWrapper.dir/libs/tinygltf/tinygltf.cpp.obj: C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/tinygltf/tinygltf.cpp
+CMakeFiles/glWrapper.dir/libs/tinygltf/tinygltf.cpp.obj: CMakeFiles/glWrapper.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/glWrapper.dir/libs/tinygltf/tinygltf.cpp.obj"
+	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/glWrapper.dir/libs/tinygltf/tinygltf.cpp.obj -MF CMakeFiles\glWrapper.dir\libs\tinygltf\tinygltf.cpp.obj.d -o CMakeFiles\glWrapper.dir\libs\tinygltf\tinygltf.cpp.obj -c C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\libs\tinygltf\tinygltf.cpp
+
+CMakeFiles/glWrapper.dir/libs/tinygltf/tinygltf.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/glWrapper.dir/libs/tinygltf/tinygltf.cpp.i"
+	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\libs\tinygltf\tinygltf.cpp > CMakeFiles\glWrapper.dir\libs\tinygltf\tinygltf.cpp.i
+
+CMakeFiles/glWrapper.dir/libs/tinygltf/tinygltf.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/glWrapper.dir/libs/tinygltf/tinygltf.cpp.s"
+	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\libs\tinygltf\tinygltf.cpp -o CMakeFiles\glWrapper.dir\libs\tinygltf\tinygltf.cpp.s
+
+CMakeFiles/glWrapper.dir/libs/gl/glad.c.obj: CMakeFiles/glWrapper.dir/flags.make
+CMakeFiles/glWrapper.dir/libs/gl/glad.c.obj: CMakeFiles/glWrapper.dir/includes_C.rsp
+CMakeFiles/glWrapper.dir/libs/gl/glad.c.obj: C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/gl/glad.c
+CMakeFiles/glWrapper.dir/libs/gl/glad.c.obj: CMakeFiles/glWrapper.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/glWrapper.dir/libs/gl/glad.c.obj"
+	C:\msys64\mingw64\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/glWrapper.dir/libs/gl/glad.c.obj -MF CMakeFiles\glWrapper.dir\libs\gl\glad.c.obj.d -o CMakeFiles\glWrapper.dir\libs\gl\glad.c.obj -c C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\libs\gl\glad.c
+
+CMakeFiles/glWrapper.dir/libs/gl/glad.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/glWrapper.dir/libs/gl/glad.c.i"
+	C:\msys64\mingw64\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\libs\gl\glad.c > CMakeFiles\glWrapper.dir\libs\gl\glad.c.i
+
+CMakeFiles/glWrapper.dir/libs/gl/glad.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/glWrapper.dir/libs/gl/glad.c.s"
+	C:\msys64\mingw64\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\libs\gl\glad.c -o CMakeFiles\glWrapper.dir\libs\gl\glad.c.s
+
 # Object files for target glWrapper
 glWrapper_OBJECTS = \
-"CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj"
+"CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj" \
+"CMakeFiles/glWrapper.dir/libs/tinygltf/stb.cpp.obj" \
+"CMakeFiles/glWrapper.dir/libs/tinygltf/tinygltf.cpp.obj" \
+"CMakeFiles/glWrapper.dir/libs/gl/glad.c.obj"
 
 # External object files for target glWrapper
 glWrapper_EXTERNAL_OBJECTS =
 
 libglWrapper.a: CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj
+libglWrapper.a: CMakeFiles/glWrapper.dir/libs/tinygltf/stb.cpp.obj
+libglWrapper.a: CMakeFiles/glWrapper.dir/libs/tinygltf/tinygltf.cpp.obj
+libglWrapper.a: CMakeFiles/glWrapper.dir/libs/gl/glad.c.obj
 libglWrapper.a: CMakeFiles/glWrapper.dir/build.make
 libglWrapper.a: CMakeFiles/glWrapper.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX static library libglWrapper.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX static library libglWrapper.a"
 	$(CMAKE_COMMAND) -P CMakeFiles\glWrapper.dir\cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\glWrapper.dir\link.txt --verbose=$(VERBOSE)
 

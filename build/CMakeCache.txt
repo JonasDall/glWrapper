@@ -299,6 +299,12 @@ DART_TESTING_TIMEOUT:STRING=1500
 //Path to a program.
 GITCOMMAND:FILEPATH=GITCOMMAND-NOTFOUND
 
+//The directory containing a CMake configuration file for GLM.
+GLM_DIR:PATH=GLM_DIR-NOTFOUND
+
+//Path to a library.
+LIBGLFW3:FILEPATH=C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/gl/libglfw3.a
+
 //Command to build the project
 MAKECOMMAND:STRING=C:/Program\ Files/CMake/bin/cmake.exe --build . --config "${CTEST_CONFIGURATION_TYPE}" -- -i
 
@@ -317,8 +323,14 @@ glWrapper_BINARY_DIR:STATIC=C:/Users/jonas/Documents/Koding/Workspaces/glWrapper
 //Value Computed by CMake
 glWrapper_IS_TOP_LEVEL:STATIC=ON
 
+//Dependencies for the target
+glWrapper_LIB_DEPENDS:STATIC=general;C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/gl/libglfw3.a;
+
 //Value Computed by CMake
 glWrapper_SOURCE_DIR:STATIC=C:/Users/jonas/Documents/Koding/Workspaces/glWrapper
+
+//The directory containing a CMake configuration file for glm.
+glm_DIR:PATH=glm_DIR-NOTFOUND
 
 
 ########################

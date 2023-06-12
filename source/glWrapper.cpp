@@ -1,5 +1,15 @@
+#include <iostream>
+
 #include "tinygltf/stb_image.h"
 #include "glWrapper.hpp"
+
+#define GW_DEBUG
+
+#ifdef GW_DEBUG
+    #define DEV_LOG(x, y) std::cout << x << y << '\n'
+#else
+    #define DEV_LOG(x, y)
+#endif
 
 // 
 // *SHADER
@@ -90,17 +100,25 @@ std::vector<unsigned short> GetIndexData(tinygltf::Model& model, tinygltf::Primi
 
 void CreateGlObjects(glWrap::Primitive &primitive){
 
+    DEV_LOG("Starting", "");
     glGenVertexArrays(1, &primitive.m_VAO);
+    // DEV_LOG("VAO", primitive.m_VAO);
     glGenBuffers(1, &primitive.m_VBO);
+    // DEV_LOG("VBO", primitive.m_VBO);
     glGenBuffers(1, &primitive.m_EBO);
+    // DEV_LOG("EBO", primitive.m_EBO);
+    DEV_LOG("Cont", "");
 
     glBindVertexArray(primitive.m_VAO);
+    DEV_LOG("Binding VAO", "");
 
     glBindBuffer(GL_ARRAY_BUFFER, primitive.m_VBO);
     glBufferData(GL_ARRAY_BUFFER, primitive.m_vertices.size() * sizeof(glWrap::Vertex), primitive.m_vertices.data(), GL_STATIC_DRAW);
+    DEV_LOG("Vertex size", primitive.m_vertices.size());
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, primitive.m_EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, primitive.m_indices.size() * sizeof(GL_UNSIGNED_SHORT), primitive.m_indices.data(), GL_STATIC_DRAW);
+    DEV_LOG("Index size", primitive.m_indices.size());
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -110,8 +128,11 @@ void CreateGlObjects(glWrap::Primitive &primitive){
 
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
+    DEV_LOG("Attrib arrays generated", "");
 
     glBindVertexArray(0);
+
+    DEV_LOG("DONE", "");
 }
 
 glWrap::Shader::Shader(std::string vertexPath, std::string fragmentPath){
@@ -218,30 +239,131 @@ void glWrap::Texture2D::SetActive(unsigned int unit){
 // *Mesh
 // 
 
-bool glWrap::loadModel(std::string path, std::vector<Mesh>& meshes){
+void glWrap::Primitive::Draw(){
+
+    glBindVertexArray(m_VAO);
+    glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_SHORT, 0);
+    glBindVertexArray(0);
+}
+
+void glWrap::Mesh::Draw(){
+
+    for (int i{}; i < m_primitives.size(); ++i){
+        m_primitives[i].Draw();
+    }
+}
+
+// 
+// *Instance
+// 
+
+glWrap::Instance::Instance(Mesh* mesh, Transform transform) : m_mesh{mesh}, m_transform{transform}{}
+
+// 
+// *Window
+// 
+
+glWrap::Window::Window(std::string name, glm::ivec2 size, bool visible) : m_name{name}, m_window{NULL}{
+    if (visible) glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
+    else glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    
+    m_window = glfwCreateWindow(size.x, size.y, name.c_str(), NULL, NULL);
+}
+
+bool glWrap::Window::AddInstance(Instance* instance){
+    if (std::count(m_instances.begin(), m_instances.end(), instance) == 0){
+        m_instances.push_back(instance);
+        return 1;
+    }
+    else {
+        DEV_LOG("Instance already added to window ", m_name);
+        return 0;
+    }
+}
+
+bool glWrap::Window::RemoveInstance(Instance* instance){
+    if (std::count(m_instances.begin(), m_instances.end(), instance) > 0){
+        m_instances.erase(std::remove(m_instances.begin(), m_instances.end(), instance), m_instances.end());
+        return 1;
+    }
+    else {
+        DEV_LOG("Instance not found in window ", m_name);
+        return 0;
+    }
+}
+
+glWrap::Window::~Window(){
+    glfwDestroyWindow(m_window);
+}
+
+//
+// *Loader
+// 
+
+glWrap::Loader::Loader(){
+    if(!glfwInit()){
+        DEV_LOG("Failed to initialize OPENGL", "");
+        return;
+    }
+
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    m_mainWindow = glfwCreateWindow(500, 500, "main", NULL, NULL);
+    glfwMakeContextCurrent(m_mainWindow);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        DEV_LOG("Failed to initialize GLAD", "");
+        glfwTerminate();
+        return;
+    }
+
+    return;
+}
+
+void glWrap::Loader::Process(GLFWwindow* window){
+
+}
+
+void glWrap::Loader::Load(std::string path){
 
     tinygltf::TinyGLTF loader;
     tinygltf::Model model;
     std::string error{};
     std::string warning{};
 
-    if (!loader.LoadASCIIFromFile(&model, &error, &warning, "assets/Triangle.gltf"))
-    {
-        std::cout << error << " | " << warning << '\n';
-
-        return 1;
+    if (!loader.LoadASCIIFromFile(&model, &error, &warning, path)){
+        DEV_LOG("ASCII Error", error);
+        DEV_LOG("ASCII Warning", warning);
     }
 
-    meshes.clear();
+    /*
+    else if (!loader.LoadBinaryFromFile(&model, &error, &warning, path)){
+        DEV_LOG("BINARY Error", error);
+        DEV_LOG("BINARY Warning", warning);
+
+        return;
+    }
+    */
+
+    DEV_LOG("Meshes found: ", model.meshes.size());
 
     for(int i{}; i < model.meshes.size(); ++i){
+        Mesh temp_mesh;
 
-        meshes.push_back(Mesh());
+        int postfix{0};
+        while (m_meshes.count(model.meshes[i].name + std::to_string(postfix))){
+            DEV_LOG("Name exists already: ", (model.meshes[i].name + std::to_string(postfix)));
+            ++postfix;
+        }
 
-            for(int j{}; j < model.meshes[i].primitives.size(); ++j){
+        DEV_LOG("Created mesh: ", (model.meshes[i].name + std::to_string(postfix)));
 
-            meshes.back().m_primitives.push_back(Primitive());
-            Primitive& prim = meshes.back().m_primitives.back();
+        for(int j{}; j < model.meshes[i].primitives.size(); ++j){
+
+            temp_mesh.m_primitives.push_back(Primitive());
+            DEV_LOG("Pushed primitive: ", j);
+
+            Primitive& prim = temp_mesh.m_primitives.back();
 
             std::vector<float> position = GetAttributeData(model, model.meshes[i].primitives[j], "POSITION");
             std::vector<float> normal = GetAttributeData(model, model.meshes[i].primitives[j], "NORMAL");
@@ -269,22 +391,66 @@ bool glWrap::loadModel(std::string path, std::vector<Mesh>& meshes){
 
             prim.m_indices = GetIndexData(model, model.meshes[i].primitives[j]);
 
+            DEV_LOG("Generating GL objects", "");
+
             CreateGlObjects(prim);
+
+            DEV_LOG("GL objects generated", "");
             }
+        m_meshes.insert({(model.meshes[i].name + std::to_string(postfix)), temp_mesh});
+
+        DEV_LOG("Inserted mesh: ", (model.meshes[i].name + std::to_string(postfix)));
     }
-    return 0;
+    DEV_LOG("Meshes created", "");
+
+    return;
 }
 
-void glWrap::Primitive::Draw(){
+glWrap::Window* glWrap::Loader::AddWindow(std::string name, glm::ivec2 size, bool visible){
+    if (m_windows.count(name)){
+        DEV_LOG("Window already added: ", name);
+        return NULL;
+    }
 
-    glBindVertexArray(m_VAO);
-    glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_SHORT, 0);
-    glBindVertexArray(0);
+    m_windows.insert({name, std::make_unique<Window>(name, size, visible)});
+    return m_windows[name].get();
 }
 
-void glWrap::Mesh::Draw(){
-
-    for (int i{}; i < m_primitives.size(); ++i){
-        m_primitives[i].Draw();
+bool glWrap::Loader::RemoveWindow(std::string name){
+    if (m_windows.erase(name)){
+        return 1;
     }
+    else {
+        DEV_LOG("Window not found: ", name);
+        return 0;
+    }
+}
+
+glWrap::Window* glWrap::Loader::GetWindow(std::string name){
+    if (m_windows.count(name)){
+        return m_windows[name].get();
+    }
+
+    DEV_LOG("Can't find window ", name);
+    return NULL;
+}
+
+void glWrap::Loader::Update(){
+
+    for(const auto& window : m_windows){
+
+        glfwSwapBuffers(window.second.get()->m_window);
+        glfwPollEvents();
+    }
+
+}
+
+void glWrap::Loader::ListMeshes(){
+    for (auto mesh : m_meshes){
+        std::cout << mesh.first << '\n';
+    }
+}
+
+glWrap::Loader::~Loader(){
+    glfwTerminate();
 }

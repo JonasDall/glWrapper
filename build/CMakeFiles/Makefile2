@@ -838,12 +838,12 @@ CMakeFiles/ContinuousSubmit.dir/clean:
 CMakeFiles/glWrapper.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\glWrapper.dir\build.make CMakeFiles/glWrapper.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\glWrapper.dir\build.make CMakeFiles/glWrapper.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\build\CMakeFiles --progress-num=1,2 "Built target glWrapper"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\build\CMakeFiles --progress-num=1,2,3,4,5 "Built target glWrapper"
 .PHONY : CMakeFiles/glWrapper.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/glWrapper.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\build\CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\build\CMakeFiles 5
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/glWrapper.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\build\CMakeFiles 0
 .PHONY : CMakeFiles/glWrapper.dir/rule
@@ -864,12 +864,12 @@ CMakeFiles/glWrapper.dir/clean:
 CMakeFiles/testProj.dir/all: CMakeFiles/glWrapper.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\testProj.dir\build.make CMakeFiles/testProj.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\testProj.dir\build.make CMakeFiles/testProj.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\build\CMakeFiles --progress-num=3,4 "Built target testProj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\build\CMakeFiles --progress-num=6,7 "Built target testProj"
 .PHONY : CMakeFiles/testProj.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/testProj.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\build\CMakeFiles 4
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\build\CMakeFiles 7
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/testProj.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\build\CMakeFiles 0
 .PHONY : CMakeFiles/testProj.dir/rule

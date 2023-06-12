@@ -8,6 +8,9 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/gl/glad.c" "CMakeFiles/glWrapper.dir/libs/gl/glad.c.obj" "gcc" "CMakeFiles/glWrapper.dir/libs/gl/glad.c.obj.d"
+  "C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/tinygltf/stb.cpp" "CMakeFiles/glWrapper.dir/libs/tinygltf/stb.cpp.obj" "gcc" "CMakeFiles/glWrapper.dir/libs/tinygltf/stb.cpp.obj.d"
+  "C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/tinygltf/tinygltf.cpp" "CMakeFiles/glWrapper.dir/libs/tinygltf/tinygltf.cpp.obj" "gcc" "CMakeFiles/glWrapper.dir/libs/tinygltf/tinygltf.cpp.obj.d"
   "C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/source/glWrapper.cpp" "CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj" "gcc" "CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj.d"
   )
 

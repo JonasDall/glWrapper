@@ -1,10 +1,10 @@
 file(REMOVE_RECURSE
-  "&{CMAKE_BINARY_DIR}/test/testProj.exe"
-  "&{CMAKE_BINARY_DIR}/test/testProj.exe.manifest"
-  "&{CMAKE_BINARY_DIR}/test/testProj.pdb"
   "CMakeFiles/testProj.dir/test/main.cpp.obj"
   "CMakeFiles/testProj.dir/test/main.cpp.obj.d"
   "libtestProj.dll.a"
+  "testProj.exe"
+  "testProj.exe.manifest"
+  "testProj.pdb"
 )
 
 # Per-language clean rules from dependency scanning.

@@ -535,6 +535,78 @@ testProj/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\testProj.dir\build.make CMakeFiles/testProj.dir/build
 .PHONY : testProj/fast
 
+libs/gl/glad.obj: libs/gl/glad.c.obj
+.PHONY : libs/gl/glad.obj
+
+# target to build an object file
+libs/gl/glad.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\glWrapper.dir\build.make CMakeFiles/glWrapper.dir/libs/gl/glad.c.obj
+.PHONY : libs/gl/glad.c.obj
+
+libs/gl/glad.i: libs/gl/glad.c.i
+.PHONY : libs/gl/glad.i
+
+# target to preprocess a source file
+libs/gl/glad.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\glWrapper.dir\build.make CMakeFiles/glWrapper.dir/libs/gl/glad.c.i
+.PHONY : libs/gl/glad.c.i
+
+libs/gl/glad.s: libs/gl/glad.c.s
+.PHONY : libs/gl/glad.s
+
+# target to generate assembly for a file
+libs/gl/glad.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\glWrapper.dir\build.make CMakeFiles/glWrapper.dir/libs/gl/glad.c.s
+.PHONY : libs/gl/glad.c.s
+
+libs/tinygltf/stb.obj: libs/tinygltf/stb.cpp.obj
+.PHONY : libs/tinygltf/stb.obj
+
+# target to build an object file
+libs/tinygltf/stb.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\glWrapper.dir\build.make CMakeFiles/glWrapper.dir/libs/tinygltf/stb.cpp.obj
+.PHONY : libs/tinygltf/stb.cpp.obj
+
+libs/tinygltf/stb.i: libs/tinygltf/stb.cpp.i
+.PHONY : libs/tinygltf/stb.i
+
+# target to preprocess a source file
+libs/tinygltf/stb.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\glWrapper.dir\build.make CMakeFiles/glWrapper.dir/libs/tinygltf/stb.cpp.i
+.PHONY : libs/tinygltf/stb.cpp.i
+
+libs/tinygltf/stb.s: libs/tinygltf/stb.cpp.s
+.PHONY : libs/tinygltf/stb.s
+
+# target to generate assembly for a file
+libs/tinygltf/stb.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\glWrapper.dir\build.make CMakeFiles/glWrapper.dir/libs/tinygltf/stb.cpp.s
+.PHONY : libs/tinygltf/stb.cpp.s
+
+libs/tinygltf/tinygltf.obj: libs/tinygltf/tinygltf.cpp.obj
+.PHONY : libs/tinygltf/tinygltf.obj
+
+# target to build an object file
+libs/tinygltf/tinygltf.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\glWrapper.dir\build.make CMakeFiles/glWrapper.dir/libs/tinygltf/tinygltf.cpp.obj
+.PHONY : libs/tinygltf/tinygltf.cpp.obj
+
+libs/tinygltf/tinygltf.i: libs/tinygltf/tinygltf.cpp.i
+.PHONY : libs/tinygltf/tinygltf.i
+
+# target to preprocess a source file
+libs/tinygltf/tinygltf.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\glWrapper.dir\build.make CMakeFiles/glWrapper.dir/libs/tinygltf/tinygltf.cpp.i
+.PHONY : libs/tinygltf/tinygltf.cpp.i
+
+libs/tinygltf/tinygltf.s: libs/tinygltf/tinygltf.cpp.s
+.PHONY : libs/tinygltf/tinygltf.s
+
+# target to generate assembly for a file
+libs/tinygltf/tinygltf.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\glWrapper.dir\build.make CMakeFiles/glWrapper.dir/libs/tinygltf/tinygltf.cpp.s
+.PHONY : libs/tinygltf/tinygltf.cpp.s
+
 source/glWrapper.obj: source/glWrapper.cpp.obj
 .PHONY : source/glWrapper.obj
 
@@ -624,6 +696,15 @@ help:
 	@echo ... NightlyUpdate
 	@echo ... glWrapper
 	@echo ... testProj
+	@echo ... libs/gl/glad.obj
+	@echo ... libs/gl/glad.i
+	@echo ... libs/gl/glad.s
+	@echo ... libs/tinygltf/stb.obj
+	@echo ... libs/tinygltf/stb.i
+	@echo ... libs/tinygltf/stb.s
+	@echo ... libs/tinygltf/tinygltf.obj
+	@echo ... libs/tinygltf/tinygltf.i
+	@echo ... libs/tinygltf/tinygltf.s
 	@echo ... source/glWrapper.obj
 	@echo ... source/glWrapper.i
 	@echo ... source/glWrapper.s

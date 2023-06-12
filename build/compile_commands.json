@@ -1,9 +1,27 @@
 [
 {
   "directory": "C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/build",
-  "command": "C:\\msys64\\mingw64\\bin\\g++.exe   -g -o CMakeFiles\\glWrapper.dir\\source\\glWrapper.cpp.obj -c C:\\Users\\jonas\\Documents\\Koding\\Workspaces\\glWrapper\\source\\glWrapper.cpp",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles/glWrapper.dir/includes_CXX.rsp -g -o CMakeFiles\\glWrapper.dir\\source\\glWrapper.cpp.obj -c C:\\Users\\jonas\\Documents\\Koding\\Workspaces\\glWrapper\\source\\glWrapper.cpp",
   "file": "C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/source/glWrapper.cpp",
   "output": "CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj"
+},
+{
+  "directory": "C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles/glWrapper.dir/includes_CXX.rsp -g -o CMakeFiles\\glWrapper.dir\\libs\\tinygltf\\stb.cpp.obj -c C:\\Users\\jonas\\Documents\\Koding\\Workspaces\\glWrapper\\libs\\tinygltf\\stb.cpp",
+  "file": "C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/tinygltf/stb.cpp",
+  "output": "CMakeFiles/glWrapper.dir/libs/tinygltf/stb.cpp.obj"
+},
+{
+  "directory": "C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles/glWrapper.dir/includes_CXX.rsp -g -o CMakeFiles\\glWrapper.dir\\libs\\tinygltf\\tinygltf.cpp.obj -c C:\\Users\\jonas\\Documents\\Koding\\Workspaces\\glWrapper\\libs\\tinygltf\\tinygltf.cpp",
+  "file": "C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/tinygltf/tinygltf.cpp",
+  "output": "CMakeFiles/glWrapper.dir/libs/tinygltf/tinygltf.cpp.obj"
+},
+{
+  "directory": "C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe  @CMakeFiles/glWrapper.dir/includes_C.rsp -g -o CMakeFiles\\glWrapper.dir\\libs\\gl\\glad.c.obj -c C:\\Users\\jonas\\Documents\\Koding\\Workspaces\\glWrapper\\libs\\gl\\glad.c",
+  "file": "C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/gl/glad.c",
+  "output": "CMakeFiles/glWrapper.dir/libs/gl/glad.c.obj"
 },
 {
   "directory": "C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/build",

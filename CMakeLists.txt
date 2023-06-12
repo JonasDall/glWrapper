@@ -4,13 +4,32 @@ project(glWrapper VERSION 0.1.0)
 include(CTest)
 enable_testing()
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY &{CMAKE_BINARY_DIR}/test)
+add_library(glWrapper STATIC
+source/glWrapper.cpp
+libs/tinygltf/stb.cpp
+libs/tinygltf/tinygltf.cpp
+libs/gl/glad.c
+)
 
-add_library(glWrapper source/glWrapper.cpp)
+target_include_directories(glWrapper
+PRIVATE "${CMAKE_SOURCE_DIR}/libs/"
+PRIVATE "${CMAKE_SOURCE_DIR}/libs/gl"
+PRIVATE "${CMAKE_SOURCE_DIR}/libs/glm"
+PRIVATE "${CMAKE_SOURCE_DIR}/libs/tinygltf"
+PRIVATE "${CMAKE_SOURCE_DIR}/include"
+)
+
+target_link_libraries(glWrapper PRIVATE "${CMAKE_SOURCE_DIR}/libs/gl/libglfw3.a")
 
 add_executable(testProj test/main.cpp)
 
-target_include_directories(testProj PRIVATE {CMAKE_BINARY_DIR}/include)
+target_include_directories(testProj
+PRIVATE "${CMAKE_SOURCE_DIR}/include"
+PRIVATE "${CMAKE_SOURCE_DIR}/libs"
+PRIVATE "${CMAKE_SOURCE_DIR}/libs/gl"
+PRIVATE "${CMAKE_SOURCE_DIR}/libs/glm"
+PRIVATE "${CMAKE_SOURCE_DIR}/libs/tinygltf"
+)
 
 target_link_libraries(testProj PRIVATE glWrapper)
 

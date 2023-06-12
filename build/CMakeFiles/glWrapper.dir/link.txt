@@ -1,2 +1,2 @@
-C:\msys64\mingw64\bin\ar.exe qc libglWrapper.a CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj
+C:\msys64\mingw64\bin\ar.exe qc libglWrapper.a CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj CMakeFiles/glWrapper.dir/libs/tinygltf/stb.cpp.obj CMakeFiles/glWrapper.dir/libs/tinygltf/tinygltf.cpp.obj CMakeFiles/glWrapper.dir/libs/gl/glad.c.obj
 C:\msys64\mingw64\bin\ranlib.exe libglWrapper.a

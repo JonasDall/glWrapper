@@ -6,8 +6,10 @@
 #include <array>
 #include <vector>
 #include <memory>
+#include <algorithm>
 
 #include "gl/glad.h"
+#include "gl/glfw3.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
@@ -19,6 +21,12 @@ namespace glWrap
         glm::vec3 pos;
         glm::vec3 nor;
         glm::vec2 tex;
+    };
+
+    struct Transform{
+        glm::vec3 pos;
+        glm::vec3 rot;
+        glm::vec2 scl;
     };
 
     class Shader
@@ -57,7 +65,7 @@ namespace glWrap
     class Camera{
         
     };
-   
+
     class Primitive{
         public:
 
@@ -81,5 +89,47 @@ namespace glWrap
         void Draw();
     };
 
-    bool loadModel(std::string path, std::vector<Mesh>& meshes);
+    class Instance{
+    public:
+        Transform m_transform;
+        Mesh* m_mesh;
+
+        Instance(Mesh* mesh, Transform transform);
+    };
+
+    class Window{
+    public:
+        std::string             m_name;
+        GLFWwindow*             m_window;
+        std::vector<Instance*>  m_instances;
+
+        // Window() = default;
+        Window(std::string name, glm::ivec2 size, bool visible);
+        bool AddInstance(Instance* instance);
+        bool RemoveInstance(Instance* instance);
+        ~Window();
+    };
+
+    class Loader{
+    private:
+        // static void framebuffer_size_callback(GLFWwindow* win, int width, int height);
+        static void Process(GLFWwindow* window);
+
+        GLFWwindow* m_mainWindow;
+        std::map<std::string, std::unique_ptr<Window>> m_windows;
+        std::map<std::string, Mesh> m_meshes;
+
+    public:
+        Loader();
+        void Load(std::string path);
+        Window* AddWindow(std::string name, glm::ivec2 size, bool visible);
+        bool RemoveWindow(std::string name);
+        Window* GetWindow(std::string name);
+
+        void ListMeshes();
+
+        void Update();
+
+        ~Loader();
+    };
 }
