@@ -18,15 +18,15 @@
 namespace glWrap
 {
     struct Vertex{
-        glm::vec3 pos;
-        glm::vec3 nor;
-        glm::vec2 tex;
+        glm::vec3 pos{};
+        glm::vec3 nor{};
+        glm::vec2 tex{};
     };
 
     struct Transform{
-        glm::vec3 pos;
-        glm::vec3 rot;
-        glm::vec2 scl;
+        glm::vec3 pos{};
+        glm::vec3 rot{};
+        glm::vec3 scl{};
     };
 
     class Shader
@@ -35,6 +35,8 @@ namespace glWrap
         unsigned int m_ID;
         
         Shader(std::string vertexPath, std::string fragmentPath);
+        Shader(const char* vertexShader, const char* fragmentShader, bool isText);
+
         void Use();
 
         void SetBool(const std::string &name, bool value) const;
@@ -62,8 +64,42 @@ namespace glWrap
         void SetActive(unsigned int unit);
     };
 
-    class Camera{
+    class WorldObject{
+    protected:
+        Transform   m_transform;
+
+    public:
+        Transform GetTransform();
+        glm::vec3 GetPosition();
+        glm::vec3 GetRotation();
+        glm::vec3 GetScale();
+        glm::vec3 GetForwardVector();
+        glm::vec3 GetUpwardVector();
+        glm::vec3 GetDirection();
+
+        void SetTransform(Transform transform);
+        void SetPosition(glm::vec3 position);
+        void SetRotation(glm::vec3 rotation);
+        void SetScale(glm::vec3 scale);
+
+        void AddPosition(glm::vec3 position);
+        void AddRotation(glm::vec3 rotation);
+        void AddScale(glm::vec3 scale);
+    };
+
+    class Camera : public WorldObject{
+    private:
+        float       m_FOV{90};
+        glm::vec2   m_aspect{800, 600};
+        glm::vec2   m_clip{0.1f, 1000.f};
+        bool        m_perspective{true};
+
+    public:
+        float GetFOV();
+        glm::mat4 GetView();
+        glm::mat4 GetProjection();
         
+        void SetFOV(float FOV);
     };
 
     class Primitive{
@@ -86,49 +122,81 @@ namespace glWrap
         std::vector<Primitive> m_primitives;
 
         Mesh() = default;
-        void Draw();
     };
 
-    class Instance{
+    class Instance : public WorldObject {
+    private:
+        Mesh*                   m_model;
+        std::vector<Shader*>    m_shaders;
+        bool                    m_remove;
+        bool                    m_visible;
+
     public:
-        Transform m_transform;
-        Mesh* m_mesh;
+        Instance(Mesh* mesh);
 
-        Instance(Mesh* mesh, Transform transform);
+        void SetMesh(Mesh* mesh);
+        void SetShader(Shader* shader, int primitive);
+        void SetTransform(Transform transform);
+        void Draw(Shader* defaultShader, Camera* camera);
+        void FlagRemoval();
+        bool ToBeRemoved();
+        void SetVisible(bool is);
     };
 
+    /*
     class Window{
     public:
         std::string             m_name;
         GLFWwindow*             m_window;
         std::vector<Instance*>  m_instances;
+        glm::vec4               m_color;
 
         // Window() = default;
-        Window(std::string name, glm::ivec2 size, bool visible);
+        Window(std::string name, glm::ivec2 size, bool visible, glm::vec4 color);
         bool AddInstance(Instance* instance);
         bool RemoveInstance(Instance* instance);
+        void DrawInstances();
         ~Window();
     };
+    */
 
     class Loader{
     private:
-        // static void framebuffer_size_callback(GLFWwindow* win, int width, int height);
-        static void Process(GLFWwindow* window);
 
-        GLFWwindow* m_mainWindow;
-        std::map<std::string, std::unique_ptr<Window>> m_windows;
-        std::map<std::string, Mesh> m_meshes;
+        // static void framebuffer_size_callback(GLFWwindow* win, int width, int height);
+
+        GLFWwindow*                 m_mainWindow;
+        glm::vec4                   m_clearColor;
+
+        std::map<std::string, Mesh> m_models;
+        std::vector<Instance>       m_instances;
+        Camera*                     m_Activecamera;
+        std::unique_ptr<Shader>     m_defaultShader;
+
+        double                      m_lastFrameTime;
+        double                      m_deltaTime;
+        // std::map<std::string, std::unique_ptr<Window>> m_windows;
 
     public:
-        Loader();
+
+        Loader(std::string name, glm::ivec2 size, bool visible, glm::vec4 color);
         void Load(std::string path);
-        Window* AddWindow(std::string name, glm::ivec2 size, bool visible);
-        bool RemoveWindow(std::string name);
-        Window* GetWindow(std::string name);
+        // Window* AddWindow(std::string name, glm::ivec2 size, bool visible, glm::vec4 color);
+        // bool RemoveWindow(std::string name);
+        // Window* GetWindow(std::string name);
+        // int GetWindowAmount();
 
-        void ListMeshes();
-
+        Instance* AddInstance(std::string model);
+        Mesh* GetMesh(std::string name);
         void Update();
+        float GetDeltaTime();
+
+        bool isKeyPressed(unsigned int key);
+        bool isKeyReleased(unsigned int key);
+        bool isKeyHeld(unsigned int key);
+        bool WindowRequestedClose();
+
+        void SetActiveCamera(Camera* camera);
 
         ~Loader();
     };

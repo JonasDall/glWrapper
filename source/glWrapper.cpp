@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "tinygltf/stb_image.h"
 #include "glWrapper.hpp"
 
@@ -11,9 +9,29 @@
     #define DEV_LOG(x, y)
 #endif
 
+
 // 
 // *SHADER
-// 
+//
+
+// *DEFAULT SHADER SOURCE
+
+const char *defaultVertexShader = "#version 330 core\n"
+"layout (location = 0) in vec3 aPos;\n"
+"uniform mat4 model;\n"
+"uniform mat4 view;\n"
+"uniform mat4 projection;\n"
+"void main()\n"
+"{\n"
+"    gl_Position = projection * view * model * vec4(aPos, 1);\n"
+"}\n";
+
+const char *defaultFragmentShader = "#version 330 core\n"
+"out vec4 FragColor;\n"
+"void main()\n"
+"{\n"
+"    FragColor = vec4(0.8, 0.8, 0.8, 1);\n"
+"}\n";
 
 static std::string ExtractFile(std::string path) // Extracts the contents of a file to a string
 {
@@ -155,7 +173,34 @@ glWrap::Shader::Shader(std::string vertexPath, std::string fragmentPath){
     if(!success)
     {
         glGetProgramInfoLog(m_ID, 512, NULL, log);
-        std::cout << "FAILED LINK: " << log << '\n';
+        DEV_LOG("Failed linking: ", log);
+    }
+
+    glDeleteShader(vertex);
+    glDeleteShader(fragment);
+
+    return;
+}
+
+glWrap::Shader::Shader(const char* vertexShader, const char* fragmentShader, bool isText){
+    unsigned int vertex, fragment; // Shader objects
+
+    CreateShader(vertex, GL_VERTEX_SHADER, vertexShader);
+    CreateShader(fragment, GL_FRAGMENT_SHADER, fragmentShader);
+
+    m_ID = glCreateProgram();
+    glAttachShader(m_ID, vertex);
+    glAttachShader(m_ID, fragment);
+
+    glLinkProgram(m_ID);
+
+    int success; // Error handle type
+    char log[512]; // Error message
+    glGetProgramiv(m_ID, GL_LINK_STATUS, &success);
+    if(!success)
+    {
+        glGetProgramInfoLog(m_ID, 512, NULL, log);
+        DEV_LOG("Failed linking: ", log);
     }
 
     glDeleteShader(vertex);
@@ -169,19 +214,23 @@ void glWrap::Shader::Use(){
 }
 
 void glWrap::Shader::SetBool(const std::string &name, bool value) const{
-    glUniform1i(glGetUniformLocation(m_ID, name.c_str()), (int)value);
+    if (glGetUniformLocation(m_ID, name.c_str()) != -1)
+        glUniform1i(glGetUniformLocation(m_ID, name.c_str()), (int)value);
 }
 
 void glWrap::Shader::SetInt(const std::string &name, int value) const{
-    glUniform1i(glGetUniformLocation(m_ID, name.c_str()), value);
+    if (glGetUniformLocation(m_ID, name.c_str()) != -1)
+        glUniform1i(glGetUniformLocation(m_ID, name.c_str()), value);
 }
 
 void glWrap::Shader::SetFloat(const std::string &name, float value) const{
-    glUniform1f(glGetUniformLocation(m_ID, name.c_str()), value);
+    if (glGetUniformLocation(m_ID, name.c_str()) != -1)
+        glUniform1f(glGetUniformLocation(m_ID, name.c_str()), value);
 }
 
 void glWrap::Shader::SetMatrix4(const std::string &name, glm::mat4 mat) const{
-    glUniformMatrix4fv(glGetUniformLocation(m_ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
+    if (glGetUniformLocation(m_ID, name.c_str()) != -1)
+        glUniformMatrix4fv(glGetUniformLocation(m_ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
 }
 
 // 
@@ -236,38 +285,130 @@ void glWrap::Texture2D::SetActive(unsigned int unit){
 }
 
 // 
-// *Mesh
+// *WorldObject
+// 
+
+glWrap::Transform glWrap::WorldObject::GetTransform(){ return m_transform; }
+glm::vec3 glWrap::WorldObject::GetPosition(){ return m_transform.pos; }
+glm::vec3 glWrap::WorldObject::GetRotation(){ return m_transform.rot; }
+glm::vec3 glWrap::WorldObject::GetScale(){ return m_transform.scl; }
+glm::vec3 glWrap::WorldObject::GetDirection(){
+    return glm::vec3{
+        (cos(glm::radians(m_transform.rot.z)) * cos(glm::radians(m_transform.rot.y))),
+        sin(glm::radians(m_transform.rot.y)),
+        (sin(glm::radians(m_transform.rot.z)) * cos(glm::radians(m_transform.rot.y)))};
+}
+
+void glWrap::WorldObject::SetTransform(Transform transform){ m_transform = transform; }
+void glWrap::WorldObject::SetPosition(glm::vec3 position){ m_transform.pos = position; }
+void glWrap::WorldObject::SetRotation(glm::vec3 rotation){ m_transform.rot = rotation; }
+void glWrap::WorldObject::SetScale(glm::vec3 scale){ m_transform.scl = scale; }
+
+void glWrap::WorldObject::AddPosition(glm::vec3 position){ m_transform.pos += position; }
+void glWrap::WorldObject::AddRotation(glm::vec3 rotation){ m_transform.rot += rotation; }
+void glWrap::WorldObject::AddScale(glm::vec3 scale){ m_transform.scl += scale; }
+
+// 
+// *Camera
+// 
+
+float glWrap::Camera::GetFOV(){ return m_FOV; }
+// glm::mat4 glWrap::Camera::GetView(){ return glm::lookAt( m_transform.pos, m_transform.pos +  ); }
+glm::mat4 glWrap::Camera::GetProjection(){
+    if(m_perspective) return glm::perspective(glm::radians(m_FOV), (m_aspect.x / m_aspect.y ), m_clip.x, m_clip.y );
+    else return glm::ortho(0.0f, m_aspect.x, 0.0f, m_aspect.y, m_clip.x, m_clip.y);
+}
+
+// 
+// *Mesh / Primitive
 // 
 
 void glWrap::Primitive::Draw(){
 
     glBindVertexArray(m_VAO);
     glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_SHORT, 0);
-    glBindVertexArray(0);
-}
-
-void glWrap::Mesh::Draw(){
-
-    for (int i{}; i < m_primitives.size(); ++i){
-        m_primitives[i].Draw();
-    }
 }
 
 // 
 // *Instance
 // 
 
-glWrap::Instance::Instance(Mesh* mesh, Transform transform) : m_mesh{mesh}, m_transform{transform}{}
+glWrap::Instance::Instance(Mesh* mesh) : m_model{mesh}, m_visible{true}, m_remove{false} { m_shaders.resize(mesh->m_primitives.size()); }
+
+void glWrap::Instance::SetMesh(Mesh* mesh){
+    m_model = mesh;
+    m_shaders.resize(mesh->m_primitives.size());
+    }
+
+void glWrap::Instance::SetShader(Shader* shader, int primitive){
+    if (primitive < m_shaders.size()){
+        m_shaders[primitive] = shader;
+    }
+    else {
+        DEV_LOG("Wrong primitive index", "");
+    }
+    }
+
+void glWrap::Instance::SetTransform(Transform transform){ m_transform = transform; }
+
+void glWrap::Instance::Draw(Shader* defaultShader, Camera* camera){
+
+    if (m_model && m_visible ){
+        if (!camera) return;
+
+        Shader* currentShader = nullptr;
+        for (int i{}; i < m_model->m_primitives.size(); ++i){
+
+            if(m_shaders[i]) currentShader = m_shaders[i]; 
+            else currentShader = defaultShader;
+
+            currentShader->Use();
+
+            glm::mat4 model = glm::mat4(1.0f);
+
+            model = glm::rotate(model, glm::radians(m_transform.rot.x), glm::vec3(1.0f, 0.0f, 0.0f));
+            model = glm::rotate(model, glm::radians(m_transform.rot.y), glm::vec3(0.0f, 1.0f, 0.0f));
+            model = glm::rotate(model, glm::radians(m_transform.rot.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+            glm::mat4 view = glm::mat4(1.0f);
+
+            view = glm::translate(view, m_transform.pos);
+
+            currentShader->SetMatrix4("model", model);
+            currentShader->SetMatrix4("view", view);
+            currentShader->SetMatrix4("projection", camera->GetProjection());
+
+            m_model->m_primitives[i].Draw();
+        }
+    }
+}
+
+void glWrap::Instance::FlagRemoval(){ m_remove = true; }
+bool glWrap::Instance::ToBeRemoved(){ return m_remove; }
+void glWrap::Instance::SetVisible(bool is) { m_visible = is; }
 
 // 
 // *Window
 // 
 
-glWrap::Window::Window(std::string name, glm::ivec2 size, bool visible) : m_name{name}, m_window{NULL}{
+/*
+glWrap::Window::Window(std::string name, glm::ivec2 size, bool visible, glm::vec4 color) : m_name{name}, m_window{NULL}, m_color{color} {
+
     if (visible) glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
     else glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-    
+
+
     m_window = glfwCreateWindow(size.x, size.y, name.c_str(), NULL, NULL);
+
+    glfwMakeContextCurrent(m_window);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        DEV_LOG("Failed to initialize GLAD", "");
+        glfwTerminate();
+        return;
+    }
+
 }
 
 bool glWrap::Window::AddInstance(Instance* instance){
@@ -292,36 +433,40 @@ bool glWrap::Window::RemoveInstance(Instance* instance){
     }
 }
 
+void glWrap::Window::DrawInstances(){
+    DEV_LOG("Drawing instances in window: ", m_name);
+
+    for (const auto& instance : m_instances){
+        instance->DrawMesh();
+    }
+}
+
 glWrap::Window::~Window(){
     glfwDestroyWindow(m_window);
 }
 
+*/
 //
 // *Loader
 // 
 
-glWrap::Loader::Loader(){
+glWrap::Loader::Loader(std::string name, glm::ivec2 size, bool visible, glm::vec4 color) : m_clearColor{color}{
     if(!glfwInit()){
         DEV_LOG("Failed to initialize OPENGL", "");
         return;
     }
 
-    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-    m_mainWindow = glfwCreateWindow(500, 500, "main", NULL, NULL);
+    m_mainWindow = glfwCreateWindow(size.x, size.y, name.c_str(), NULL, NULL);
+
     glfwMakeContextCurrent(m_mainWindow);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         DEV_LOG("Failed to initialize GLAD", "");
         glfwTerminate();
-        return;
     }
 
-    return;
-}
-
-void glWrap::Loader::Process(GLFWwindow* window){
-
+    m_defaultShader = std::make_unique<Shader>(defaultVertexShader, defaultFragmentShader, true);
 }
 
 void glWrap::Loader::Load(std::string path){
@@ -351,7 +496,7 @@ void glWrap::Loader::Load(std::string path){
         Mesh temp_mesh;
 
         int postfix{0};
-        while (m_meshes.count(model.meshes[i].name + std::to_string(postfix))){
+        while (m_models.count(model.meshes[i].name + std::to_string(postfix))){
             DEV_LOG("Name exists already: ", (model.meshes[i].name + std::to_string(postfix)));
             ++postfix;
         }
@@ -397,7 +542,7 @@ void glWrap::Loader::Load(std::string path){
 
             DEV_LOG("GL objects generated", "");
             }
-        m_meshes.insert({(model.meshes[i].name + std::to_string(postfix)), temp_mesh});
+        m_models.insert({(model.meshes[i].name + std::to_string(postfix)), temp_mesh});
 
         DEV_LOG("Inserted mesh: ", (model.meshes[i].name + std::to_string(postfix)));
     }
@@ -406,13 +551,14 @@ void glWrap::Loader::Load(std::string path){
     return;
 }
 
-glWrap::Window* glWrap::Loader::AddWindow(std::string name, glm::ivec2 size, bool visible){
+/*
+glWrap::Window* glWrap::Loader::AddWindow(std::string name, glm::ivec2 size, bool visible, glm::vec4 color){
     if (m_windows.count(name)){
         DEV_LOG("Window already added: ", name);
         return NULL;
     }
 
-    m_windows.insert({name, std::make_unique<Window>(name, size, visible)});
+    m_windows.insert({name, std::make_unique<Window>(name, size, visible, color)});
     return m_windows[name].get();
 }
 
@@ -435,21 +581,60 @@ glWrap::Window* glWrap::Loader::GetWindow(std::string name){
     return NULL;
 }
 
+int glWrap::Loader::GetWindowAmount(){ return m_windows.size(); }
+*/
+
 void glWrap::Loader::Update(){
 
-    for(const auto& window : m_windows){
-
-        glfwSwapBuffers(window.second.get()->m_window);
-        glfwPollEvents();
+    for (int i{ static_cast<int>(m_instances.size()) }; i-- > 0 ; ){
+        if(m_instances[i].ToBeRemoved()){
+            m_instances.erase(m_instances.end() - i);
+        }
     }
 
+    glClearColor(m_clearColor.r, m_clearColor.g, m_clearColor.b, m_clearColor.a);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    for (auto& instance : m_instances){
+        instance.Draw(m_defaultShader.get(), m_Activecamera);
+    }
+
+    glfwSwapBuffers(m_mainWindow);
+    glfwPollEvents();
+
+    m_deltaTime = glfwGetTime() - m_lastFrameTime;
+    m_lastFrameTime = glfwGetTime();
 }
 
-void glWrap::Loader::ListMeshes(){
-    for (auto mesh : m_meshes){
-        std::cout << mesh.first << '\n';
+glWrap::Instance* glWrap::Loader::AddInstance(std::string model){
+    return &(m_instances.emplace_back( &(m_models[model]) ));
+}
+
+glWrap::Mesh* glWrap::Loader::GetMesh(std::string name){
+    if (m_models.count(name)){
+        return &(m_models[name]);
+    }
+    else {
+        DEV_LOG("Mesh not found: ", name);
+        return NULL;
     }
 }
+
+float glWrap::Loader::GetDeltaTime(){ return m_deltaTime; }
+
+bool glWrap::Loader::isKeyPressed(unsigned int key){
+    return ( glfwGetKey(m_mainWindow, key) == GLFW_PRESS );
+}
+bool glWrap::Loader::isKeyReleased(unsigned int key){
+    return ( glfwGetKey(m_mainWindow, key) == GLFW_RELEASE );
+}
+bool glWrap::Loader::isKeyHeld(unsigned int key){
+    return ( glfwGetKey(m_mainWindow, key) == GLFW_REPEAT );
+}
+
+bool glWrap::Loader::WindowRequestedClose(){ return glfwWindowShouldClose(m_mainWindow); }
+
+void glWrap::Loader::SetActiveCamera( Camera* camera ){ m_Activecamera = camera; }
 
 glWrap::Loader::~Loader(){
     glfwTerminate();
