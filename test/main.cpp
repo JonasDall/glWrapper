@@ -18,9 +18,9 @@ int main(){
     loader.SetActiveCamera(&camera);
 
     while (!loader.WindowRequestedClose() ){
-        float movement = -2.f * loader.GetDeltaTime();
+        
+        std::cout << (loader.isKeyHeld(GLFW_KEY_E) && loader.isKeyHeld(GLFW_KEY_F) ) << '\n';
 
-        instance->AddPosition({0.f, movement, 0.f});
         loader.Update();
     }
 

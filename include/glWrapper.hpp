@@ -164,6 +164,7 @@ namespace glWrap
     private:
 
         // static void framebuffer_size_callback(GLFWwindow* win, int width, int height);
+        static void keyCall(GLFWwindow* window, int key, int scancode, int action, int mods);
 
         GLFWwindow*                 m_mainWindow;
         glm::vec4                   m_clearColor;
@@ -172,6 +173,7 @@ namespace glWrap
         std::vector<Instance>       m_instances;
         Camera*                     m_Activecamera;
         std::unique_ptr<Shader>     m_defaultShader;
+        static std::vector<unsigned int>   m_heldKeys;
 
         double                      m_lastFrameTime;
         double                      m_deltaTime;
@@ -194,6 +196,7 @@ namespace glWrap
         bool isKeyPressed(unsigned int key);
         bool isKeyReleased(unsigned int key);
         bool isKeyHeld(unsigned int key);
+        bool isKeyRepeat(unsigned int key);
         bool WindowRequestedClose();
 
         void SetActiveCamera(Camera* camera);

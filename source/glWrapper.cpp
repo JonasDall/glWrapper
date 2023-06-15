@@ -366,17 +366,19 @@ void glWrap::Instance::Draw(Shader* defaultShader, Camera* camera){
 
             glm::mat4 model = glm::mat4(1.0f);
 
-            model = glm::rotate(model, glm::radians(m_transform.rot.x), glm::vec3(1.0f, 0.0f, 0.0f));
-            model = glm::rotate(model, glm::radians(m_transform.rot.y), glm::vec3(0.0f, 1.0f, 0.0f));
-            model = glm::rotate(model, glm::radians(m_transform.rot.z), glm::vec3(0.0f, 0.0f, 1.0f));
+            // model = glm::rotate(model, glm::radians(m_transform.rot.x), glm::vec3(1.0f, 0.0f, 0.0f));
+            // model = glm::rotate(model, glm::radians(m_transform.rot.y), glm::vec3(0.0f, 1.0f, 0.0f));
+            // model = glm::rotate(model, glm::radians(m_transform.rot.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
             glm::mat4 view = glm::mat4(1.0f);
 
-            view = glm::translate(view, m_transform.pos);
+            // view = glm::translate(view, m_transform.pos);
+
+            glm::mat4 projection = glm::mat4(1.0f);
 
             currentShader->SetMatrix4("model", model);
             currentShader->SetMatrix4("view", view);
-            currentShader->SetMatrix4("projection", camera->GetProjection());
+            currentShader->SetMatrix4("projection", projection);
 
             m_model->m_primitives[i].Draw();
         }
@@ -467,6 +469,30 @@ glWrap::Loader::Loader(std::string name, glm::ivec2 size, bool visible, glm::vec
     }
 
     m_defaultShader = std::make_unique<Shader>(defaultVertexShader, defaultFragmentShader, true);
+
+    glfwSetKeyCallback(m_mainWindow, keyCall);
+}
+
+std::vector<unsigned int> glWrap::Loader::m_heldKeys;
+
+void glWrap::Loader::keyCall(GLFWwindow* window, int key, int scancode, int action, int mods){
+    switch (action){
+        case GLFW_PRESS:
+            Loader::m_heldKeys.push_back(key);
+            break;
+
+        case GLFW_RELEASE:
+            for (int i{}; i < Loader::m_heldKeys.size(); ++i){
+                if(Loader::m_heldKeys[i] == key){
+                    Loader::m_heldKeys.erase(Loader::m_heldKeys.begin() + i);
+                    break;
+                }
+            }
+            break;
+
+        case GLFW_REPEAT:
+            break;
+    }
 }
 
 void glWrap::Loader::Load(std::string path){
@@ -629,6 +655,10 @@ bool glWrap::Loader::isKeyReleased(unsigned int key){
     return ( glfwGetKey(m_mainWindow, key) == GLFW_RELEASE );
 }
 bool glWrap::Loader::isKeyHeld(unsigned int key){
+    return ( std::count(m_heldKeys.begin(), m_heldKeys.end(), key) );
+}
+
+bool glWrap::Loader::isKeyRepeat(unsigned int key){
     return ( glfwGetKey(m_mainWindow, key) == GLFW_REPEAT );
 }
 
