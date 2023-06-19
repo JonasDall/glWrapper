@@ -145,45 +145,36 @@ namespace glWrap
 
     class Window{
     private:
-        // static void keyCall(GLFWwindow* window, int key, int scancode, int action, int mods);
+        static void keyCall(GLFWwindow* window, int key, int scancode, int action, int mods);
+
         // static void framebuffer_size_callback(GLFWwindow* win, int width, int height);
         GLFWwindow*                         m_window;
         std::string                         m_name;
         static std::vector<unsigned int>    m_heldKeys;
+        std::vector<unsigned int>           m_pressedKeys;
+        std::unique_ptr<Shader>             m_defaultShader;
+        double                              m_lastFrameTime;
+        double                              m_deltaTime;
+        bool                                m_firstFrame{true};
+        bool                                m_windowRequestClose;
 
     public:
-        glm::vec4                           m_color;
-        Camera*                             m_ActiveCamera;
+        glm::vec4                           m_color{0.0f, 0.0f, 0.0f, 1.0f};
+        Camera*                             m_ActiveCamera{nullptr};
 
         // Window() = default;
-        Window(std::string name, glm::ivec2 size, glm::vec4 color, Camera* camera, GLFWwindow* context);
+        Window(std::string name, glm::ivec2 size);
         void Swap();
         void Draw(Instance& instance);
+        float GetDeltaTime();
+        void LoadMesh(std::map<std::string, Mesh>& container, std::string file);
         ~Window();
 
-        // bool isKeyPressed(unsigned int key);
-        // bool isKeyReleased(unsigned int key);
-        // bool isKeyHeld(unsigned int key);
-        // bool isKeyRepeat(unsigned int key);
-        // bool WindowRequestedClose();
+        bool isKeyPressed(unsigned int key);
+        bool isKeyReleased(unsigned int key);
+        bool isKeyHeld(unsigned int key);
+        bool isKeyRepeat(unsigned int key);
+        bool WindowRequestedClose();
     };
 
-    class Engine{
-    private:
-        GLFWwindow*             m_context;
-        std::unique_ptr<Shader> m_defaultShader;
-        double                  m_lastFrameTime;
-        double                  m_deltaTime;
-        bool                    m_firstFrame{true};
-
-    public:
-        Engine();
-        void Update();
-        float GetDeltaTime();
-        Shader* GetDefaultShader();
-        GLFWwindow* GetContext();
-        ~Engine();
-    };
-
-    void LoadMesh(std::map<std::string, Mesh>& container, std::string file);
 }

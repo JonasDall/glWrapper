@@ -10,33 +10,36 @@
 
 int main(){
 
-    glWrap::Engine engine;
-
-    std::map<std::string, glWrap::Mesh> meshes;
-
-    glWrap::LoadMesh(meshes, "../assets/Triangle.gltf");
-
-    for (auto& mesh : meshes){
-        std::cout << mesh.first << '\n';
-    }
-
-    glWrap::Shader shader("../assets/vertex.glsl", "../assets/fragment.glsl");
-
-    glWrap::Instance instance;
-
-    instance.SetMesh(&meshes.at("Triangle.0"));
-
-    instance.SetShader(&shader, 0);
+    glWrap::Window window("Window", {500, 500});
 
     glWrap::Camera camera;
 
-    glWrap::Window window("Window", {500, 500}, {0.0f, 0.0f, 0.0f, 1.0f}, &camera, engine.GetContext());
+    window.m_ActiveCamera = &camera;
 
-    while (true){
+    std::map<std::string, glWrap::Mesh> meshes;
+
+    window.LoadMesh(meshes, "../assets/Triangle.gltf");
+
+    for (auto& mesh : meshes){
+        DEV_LOG("Mesh: ", mesh.first);
+    }
+
+    glWrap::Shader shader("../assets/vertex.glsl", "../assets/fragment.glsl");
+    glWrap::Instance instance;
+    glWrap::Instance instance2;
+    instance.SetMesh(&meshes.at("Triangle.0"));
+    instance2.SetMesh(&meshes.at("Triangle.001.0"));
+    instance.SetShader(&shader, 0);
+    // instance2.SetShader(&shader, 0);
+
+    bool run = true;
+
+    while (run){
+        if (window.isKeyHeld(GLFW_KEY_W)) run = false;
+
         window.Draw(instance);
+        window.Draw(instance2);
         window.Swap();
-
-        engine.Update();
     }
 
     return 0;

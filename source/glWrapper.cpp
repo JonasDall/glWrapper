@@ -371,42 +371,53 @@ bool glWrap::Instance::GetVisibility(){ return m_visible; }
 // *Window
 // 
 
-glWrap::Window::Window(std::string name, glm::ivec2 size, glm::vec4 color, Camera* camera, GLFWwindow* context) : m_name{name}, m_color{color}{
+std::vector<unsigned int> glWrap::Window::m_heldKeys;
 
-    m_ActiveCamera = camera;
+glWrap::Window::Window(std::string name, glm::ivec2 size) : m_name{name}{
 
-    m_window = glfwCreateWindow(size.x, size.y, name.c_str(), NULL, context);
+    if(!glfwInit()){
+        DEV_LOG("Failed to initialize OPENGL", "");
+        return;
+    }
+
+    m_window = glfwCreateWindow(size.x, size.y, name.c_str(), NULL, NULL);
 
     glfwMakeContextCurrent(m_window);
 
-    /*
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         DEV_LOG("Failed to initialize GLAD for window ", name);
         glfwTerminate();
     }
-    */
 
-    // glfwSetKeyCallback(m_window, keyCall);
+    m_defaultShader = std::make_unique<Shader>(defaultVertexShader, defaultFragmentShader, true);
+
+    glfwSetKeyCallback(m_window, keyCall);
 }
 
 void glWrap::Window::Swap(){
+
     glfwSwapBuffers(m_window);
-    if (glfwGetCurrentContext() != m_window) glfwMakeContextCurrent(m_window);
     glClearColor(m_color.r, m_color.b, m_color.g, m_color.a);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    glfwPollEvents();
+    m_deltaTime = glfwGetTime() - m_lastFrameTime;
+    m_lastFrameTime = glfwGetTime();
+
+    if (!m_firstFrame) return;
+    
+    m_deltaTime = 0.0f;
+    m_lastFrameTime = glfwGetTime();
+    m_firstFrame = false;
 }
 
 void glWrap::Window::Draw(Instance& instance){
     if (instance.GetMesh() && instance.GetVisibility() && m_ActiveCamera){
 
         for (int i{}; i < instance.GetMesh()->m_primitives.size(); ++i){
-            
-            if (!instance.GetShader(i)) continue;
 
-            if (glfwGetCurrentContext() != m_window) glfwMakeContextCurrent(m_window);
-
-            Shader* currentShader = instance.GetShader(i);
+            Shader* currentShader = instance.GetShader(i) ? instance.GetShader(i) : m_defaultShader.get();
 
             currentShader->Use();
 
@@ -440,11 +451,9 @@ void glWrap::Window::Draw(Instance& instance){
     }
 }
 
-glWrap::Window::~Window(){
-    glfwDestroyWindow(m_window);
-}
+float glWrap::Window::GetDeltaTime(){ return m_deltaTime; }
 
-/*
+
 void glWrap::Window::keyCall(GLFWwindow* window, int key, int scancode, int action, int mods){
     switch (action){
         case GLFW_PRESS:
@@ -464,61 +473,8 @@ void glWrap::Window::keyCall(GLFWwindow* window, int key, int scancode, int acti
             break;
     }
 }
-*/
 
-//
-// *Engine
-// 
-
-glWrap::Engine::Engine(){
-    
-    if(!glfwInit()){
-        DEV_LOG("Failed to initialize OPENGL", "");
-        return;
-    }
-    
-    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-
-    m_context = glfwCreateWindow(10, 10, ".", NULL, NULL);
-
-    glfwMakeContextCurrent(m_context);
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        DEV_LOG("Failed to initialize GLAD for default context", "");
-        glfwTerminate();
-    }
-
-    m_defaultShader = std::make_unique<Shader>(defaultVertexShader, defaultFragmentShader, true);
-
-    glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
-}
-
-void glWrap::Engine::Update(){
-    if (m_firstFrame){
-        m_deltaTime = 0.0f;
-        m_lastFrameTime = glfwGetTime();
-        m_firstFrame = false;
-        glfwPollEvents();
-        return;
-    }
-
-    glfwPollEvents();
-    m_deltaTime = glfwGetTime() - m_lastFrameTime;
-    m_lastFrameTime = glfwGetTime();
-}
-
-float glWrap::Engine::GetDeltaTime(){ return m_deltaTime; }
-
-glWrap::Shader* glWrap::Engine::GetDefaultShader(){ return m_defaultShader.get(); }
-
-GLFWwindow* glWrap::Engine::GetContext(){ return m_context; }
-
-glWrap::Engine::~Engine(){
-    glfwTerminate();
-}
-
-void glWrap::LoadMesh(std::map<std::string, Mesh>& container, std::string file){
+void glWrap::Window::LoadMesh(std::map<std::string, Mesh>& container, std::string file){
 
     tinygltf::TinyGLTF loader;
     tinygltf::Model model;
@@ -539,23 +495,17 @@ void glWrap::LoadMesh(std::map<std::string, Mesh>& container, std::string file){
     }
     */
 
-    // DEV_LOG("Meshes found: ", model.meshes.size());
-
     for(int i{}; i < model.meshes.size(); ++i){
         Mesh temp_mesh;
 
         int postfix{0};
         while (container.count(model.meshes[i].name + "." + std::to_string(postfix))){
-            // DEV_LOG("Name exists already: ", (model.meshes[i].name + "." + std::to_string(postfix)));
             ++postfix;
         }
-
-        // DEV_LOG("Created mesh: ", (model.meshes[i].name + "." + std::to_string(postfix)));
 
         for(int j{}; j < model.meshes[i].primitives.size(); ++j){
 
             temp_mesh.m_primitives.push_back(Primitive());
-            // DEV_LOG("Pushed primitive: ", j);
 
             Primitive& prim = temp_mesh.m_primitives.back();
 
@@ -585,17 +535,20 @@ void glWrap::LoadMesh(std::map<std::string, Mesh>& container, std::string file){
 
             prim.m_indices = GetIndexData(model, model.meshes[i].primitives[j]);
 
-            // DEV_LOG("Generating GL objects", "");
-
             CreateGlObjects(prim);
 
-            // DEV_LOG("GL objects generated", "");
             }
         container.insert({(model.meshes[i].name + "." + std::to_string(postfix)), temp_mesh});
-
-        // DEV_LOG("Inserted mesh: ", (model.meshes[i].name + std::to_string(postfix)));
     }
-    // DEV_LOG("Meshes created", "");
-
     return;
+}
+
+bool glWrap::Window::isKeyPressed(unsigned int key){ return glfwGetKey(m_window, key) == GLFW_PRESS; }
+bool glWrap::Window::isKeyReleased(unsigned int key){ return glfwGetKey(m_window, key) == GLFW_RELEASE; }
+bool glWrap::Window::isKeyHeld(unsigned int key){ return glfwGetKey(m_window, key) == GLFW_PRESS; }
+bool glWrap::Window::isKeyRepeat(unsigned int key){ return glfwGetKey(m_window, key) == GLFW_REPEAT; }
+bool glWrap::Window::WindowRequestedClose(){ return glfwWindowShouldClose(m_window); }
+
+glWrap::Window::~Window(){
+    glfwTerminate();
 }
