@@ -1,4 +1,3 @@
-#include "tinygltf/stb_image.h"
 #include "glWrapper.hpp"
 
 #define GW_DEBUG
@@ -8,7 +7,6 @@
 #else
     #define DEV_LOG(x, y)
 #endif
-
 
 // 
 // *SHADER
@@ -70,7 +68,7 @@ static void CreateShader(unsigned int &id, GLenum type, std::string code){
     if(!success)
     {
         glGetShaderInfoLog(id, 512, NULL, log);
-        std::cout << "FAILED COMPILE: " << log << '\n';
+        DEV_LOG("Failed compile: ", log);
     }
 
     return;
@@ -118,25 +116,25 @@ std::vector<unsigned short> GetIndexData(tinygltf::Model& model, tinygltf::Primi
 
 void CreateGlObjects(glWrap::Primitive &primitive){
 
-    DEV_LOG("Starting", "");
+    // DEV_LOG("Starting", "");
     glGenVertexArrays(1, &primitive.m_VAO);
     // DEV_LOG("VAO", primitive.m_VAO);
     glGenBuffers(1, &primitive.m_VBO);
     // DEV_LOG("VBO", primitive.m_VBO);
     glGenBuffers(1, &primitive.m_EBO);
     // DEV_LOG("EBO", primitive.m_EBO);
-    DEV_LOG("Cont", "");
+    // DEV_LOG("Cont", "");
 
     glBindVertexArray(primitive.m_VAO);
-    DEV_LOG("Binding VAO", "");
+    // DEV_LOG("Binding VAO", "");
 
     glBindBuffer(GL_ARRAY_BUFFER, primitive.m_VBO);
     glBufferData(GL_ARRAY_BUFFER, primitive.m_vertices.size() * sizeof(glWrap::Vertex), primitive.m_vertices.data(), GL_STATIC_DRAW);
-    DEV_LOG("Vertex size", primitive.m_vertices.size());
+    // DEV_LOG("Vertex size", primitive.m_vertices.size());
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, primitive.m_EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, primitive.m_indices.size() * sizeof(GL_UNSIGNED_SHORT), primitive.m_indices.data(), GL_STATIC_DRAW);
-    DEV_LOG("Index size", primitive.m_indices.size());
+    // DEV_LOG("Index size", primitive.m_indices.size());
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -146,11 +144,11 @@ void CreateGlObjects(glWrap::Primitive &primitive){
 
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
-    DEV_LOG("Attrib arrays generated", "");
+    // DEV_LOG("Attrib arrays generated", "");
 
     glBindVertexArray(0);
 
-    DEV_LOG("DONE", "");
+    // DEV_LOG("DONE", "");
 }
 
 glWrap::Shader::Shader(std::string vertexPath, std::string fragmentPath){
@@ -288,9 +286,9 @@ void glWrap::Texture2D::SetActive(unsigned int unit){
 // *WorldObject
 // 
 
-glWrap::Transform glWrap::WorldObject::GetTransform(){ return m_transform; }
+glWrap::Transform glWrap::WorldObject::GetTransform() { return m_transform; }
 glm::vec3 glWrap::WorldObject::GetPosition(){ return m_transform.pos; }
-glm::vec3 glWrap::WorldObject::GetRotation(){ return m_transform.rot; }
+glm::vec3 glWrap::WorldObject::GetRotation() { return m_transform.rot; }
 glm::vec3 glWrap::WorldObject::GetScale(){ return m_transform.scl; }
 glm::vec3 glWrap::WorldObject::GetDirection(){
     return glm::vec3{
@@ -325,121 +323,120 @@ glm::mat4 glWrap::Camera::GetProjection(){
 
 void glWrap::Primitive::Draw(){
 
+    // DEV_LOG("Binding VAO: ", m_VAO);
     glBindVertexArray(m_VAO);
+
+    // DEV_LOG("Drawing elements", "");
     glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_SHORT, 0);
+
+    // DEV_LOG("Elements drawn", "");
 }
 
 // 
 // *Instance
 // 
 
-glWrap::Instance::Instance(Mesh* mesh) : m_model{mesh}, m_visible{true}, m_remove{false} { m_shaders.resize(mesh->m_primitives.size()); }
-
 void glWrap::Instance::SetMesh(Mesh* mesh){
-    m_model = mesh;
+    m_mesh = mesh;
     m_shaders.resize(mesh->m_primitives.size());
-    }
+    // DEV_LOG("Shaders required: ", m_shaders.size());
+}
 
 void glWrap::Instance::SetShader(Shader* shader, int primitive){
     if (primitive < m_shaders.size()){
         m_shaders[primitive] = shader;
     }
     else {
-        DEV_LOG("Wrong primitive index", "");
-    }
-    }
-
-void glWrap::Instance::SetTransform(Transform transform){ m_transform = transform; }
-
-void glWrap::Instance::Draw(Shader* defaultShader, Camera* camera){
-
-    if (m_model && m_visible ){
-        if (!camera) return;
-
-        Shader* currentShader = nullptr;
-        for (int i{}; i < m_model->m_primitives.size(); ++i){
-
-            if(m_shaders[i]) currentShader = m_shaders[i]; 
-            else currentShader = defaultShader;
-
-            currentShader->Use();
-
-            glm::mat4 model = glm::mat4(1.0f);
-
-            // model = glm::rotate(model, glm::radians(m_transform.rot.x), glm::vec3(1.0f, 0.0f, 0.0f));
-            // model = glm::rotate(model, glm::radians(m_transform.rot.y), glm::vec3(0.0f, 1.0f, 0.0f));
-            // model = glm::rotate(model, glm::radians(m_transform.rot.z), glm::vec3(0.0f, 0.0f, 1.0f));
-
-            glm::mat4 view = glm::mat4(1.0f);
-
-            // view = glm::translate(view, m_transform.pos);
-
-            glm::mat4 projection = glm::mat4(1.0f);
-
-            currentShader->SetMatrix4("model", model);
-            currentShader->SetMatrix4("view", view);
-            currentShader->SetMatrix4("projection", projection);
-
-            m_model->m_primitives[i].Draw();
-        }
+        DEV_LOG("Wrong primitive index, max is: ", m_shaders.size() - 1);
     }
 }
 
-void glWrap::Instance::FlagRemoval(){ m_remove = true; }
-bool glWrap::Instance::ToBeRemoved(){ return m_remove; }
-void glWrap::Instance::SetVisible(bool is) { m_visible = is; }
+void glWrap::Instance::SetVisibility(bool visibility){ m_visible = visibility; }
+
+glWrap::Mesh* glWrap::Instance::GetMesh(){ return m_mesh; }
+
+glWrap::Shader* glWrap::Instance::GetShader(int primitive){
+    if (primitive < m_shaders.size()){
+        return m_shaders[primitive];
+    }
+    else {
+        // DEV_LOG("Wrong primitive index, max is: ", m_shaders.size() - 1);
+        return nullptr;
+    }
+}
+
+bool glWrap::Instance::GetVisibility(){ return m_visible; }
 
 // 
 // *Window
 // 
 
-/*
-glWrap::Window::Window(std::string name, glm::ivec2 size, bool visible, glm::vec4 color) : m_name{name}, m_window{NULL}, m_color{color} {
+glWrap::Window::Window(std::string name, glm::ivec2 size, glm::vec4 color, Camera* camera, GLFWwindow* context) : m_name{name}, m_color{color}{
 
-    if (visible) glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
-    else glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    m_ActiveCamera = camera;
 
-
-    m_window = glfwCreateWindow(size.x, size.y, name.c_str(), NULL, NULL);
+    m_window = glfwCreateWindow(size.x, size.y, name.c_str(), NULL, context);
 
     glfwMakeContextCurrent(m_window);
 
+    /*
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        DEV_LOG("Failed to initialize GLAD", "");
+        DEV_LOG("Failed to initialize GLAD for window ", name);
         glfwTerminate();
-        return;
     }
+    */
 
+    // glfwSetKeyCallback(m_window, keyCall);
 }
 
-bool glWrap::Window::AddInstance(Instance* instance){
-    if (std::count(m_instances.begin(), m_instances.end(), instance) == 0){
-        m_instances.push_back(instance);
-        return 1;
-    }
-    else {
-        DEV_LOG("Instance already added to window ", m_name);
-        return 0;
-    }
+void glWrap::Window::Swap(){
+    glfwSwapBuffers(m_window);
+    if (glfwGetCurrentContext() != m_window) glfwMakeContextCurrent(m_window);
+    glClearColor(m_color.r, m_color.b, m_color.g, m_color.a);
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
-bool glWrap::Window::RemoveInstance(Instance* instance){
-    if (std::count(m_instances.begin(), m_instances.end(), instance) > 0){
-        m_instances.erase(std::remove(m_instances.begin(), m_instances.end(), instance), m_instances.end());
-        return 1;
-    }
-    else {
-        DEV_LOG("Instance not found in window ", m_name);
-        return 0;
-    }
-}
+void glWrap::Window::Draw(Instance& instance){
+    if (instance.GetMesh() && instance.GetVisibility() && m_ActiveCamera){
 
-void glWrap::Window::DrawInstances(){
-    DEV_LOG("Drawing instances in window: ", m_name);
+        for (int i{}; i < instance.GetMesh()->m_primitives.size(); ++i){
+            
+            if (!instance.GetShader(i)) continue;
 
-    for (const auto& instance : m_instances){
-        instance->DrawMesh();
+            if (glfwGetCurrentContext() != m_window) glfwMakeContextCurrent(m_window);
+
+            Shader* currentShader = instance.GetShader(i);
+
+            currentShader->Use();
+
+            glm::mat4 model = glm::mat4(1.0f);
+
+            // model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+            // model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+            // model = glm::rotate(model, glm::radians(m_transform.rot.x), glm::vec3(1.0f, 0.0f, 0.0f));
+
+            // model = glm::rotate(model, glm::radians(m_transform.rot.y), glm::vec3(0.0f, 1.0f, 0.0f));
+            // model = glm::rotate(model, glm::radians(m_transform.rot.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+            glm::mat4 view = glm::mat4(1.0f);
+
+            view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
+            // view = glm::translate(view, m_transform.pos);
+
+            glm::mat4 projection = glm::mat4(1.0f);
+
+            projection = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
+
+            currentShader->SetMatrix4("model", model);
+            currentShader->SetMatrix4("view", view);
+            currentShader->SetMatrix4("projection", projection);
+
+            instance.GetMesh()->m_primitives[i].Draw();
+        }
     }
 }
 
@@ -447,44 +444,17 @@ glWrap::Window::~Window(){
     glfwDestroyWindow(m_window);
 }
 
-*/
-//
-// *Loader
-// 
-
-glWrap::Loader::Loader(std::string name, glm::ivec2 size, bool visible, glm::vec4 color) : m_clearColor{color}{
-    if(!glfwInit()){
-        DEV_LOG("Failed to initialize OPENGL", "");
-        return;
-    }
-
-    m_mainWindow = glfwCreateWindow(size.x, size.y, name.c_str(), NULL, NULL);
-
-    glfwMakeContextCurrent(m_mainWindow);
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        DEV_LOG("Failed to initialize GLAD", "");
-        glfwTerminate();
-    }
-
-    m_defaultShader = std::make_unique<Shader>(defaultVertexShader, defaultFragmentShader, true);
-
-    glfwSetKeyCallback(m_mainWindow, keyCall);
-}
-
-std::vector<unsigned int> glWrap::Loader::m_heldKeys;
-
-void glWrap::Loader::keyCall(GLFWwindow* window, int key, int scancode, int action, int mods){
+/*
+void glWrap::Window::keyCall(GLFWwindow* window, int key, int scancode, int action, int mods){
     switch (action){
         case GLFW_PRESS:
-            Loader::m_heldKeys.push_back(key);
+            m_heldKeys.push_back(key);
             break;
 
         case GLFW_RELEASE:
-            for (int i{}; i < Loader::m_heldKeys.size(); ++i){
-                if(Loader::m_heldKeys[i] == key){
-                    Loader::m_heldKeys.erase(Loader::m_heldKeys.begin() + i);
+            for (int i{}; i < m_heldKeys.size(); ++i){
+                if(m_heldKeys[i] == key){
+                    m_heldKeys.erase(m_heldKeys.begin() + i);
                     break;
                 }
             }
@@ -494,21 +464,74 @@ void glWrap::Loader::keyCall(GLFWwindow* window, int key, int scancode, int acti
             break;
     }
 }
+*/
 
-void glWrap::Loader::Load(std::string path){
+//
+// *Engine
+// 
+
+glWrap::Engine::Engine(){
+    
+    if(!glfwInit()){
+        DEV_LOG("Failed to initialize OPENGL", "");
+        return;
+    }
+    
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+
+    m_context = glfwCreateWindow(10, 10, ".", NULL, NULL);
+
+    glfwMakeContextCurrent(m_context);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        DEV_LOG("Failed to initialize GLAD for default context", "");
+        glfwTerminate();
+    }
+
+    m_defaultShader = std::make_unique<Shader>(defaultVertexShader, defaultFragmentShader, true);
+
+    glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
+}
+
+void glWrap::Engine::Update(){
+    if (m_firstFrame){
+        m_deltaTime = 0.0f;
+        m_lastFrameTime = glfwGetTime();
+        m_firstFrame = false;
+        glfwPollEvents();
+        return;
+    }
+
+    glfwPollEvents();
+    m_deltaTime = glfwGetTime() - m_lastFrameTime;
+    m_lastFrameTime = glfwGetTime();
+}
+
+float glWrap::Engine::GetDeltaTime(){ return m_deltaTime; }
+
+glWrap::Shader* glWrap::Engine::GetDefaultShader(){ return m_defaultShader.get(); }
+
+GLFWwindow* glWrap::Engine::GetContext(){ return m_context; }
+
+glWrap::Engine::~Engine(){
+    glfwTerminate();
+}
+
+void glWrap::LoadMesh(std::map<std::string, Mesh>& container, std::string file){
 
     tinygltf::TinyGLTF loader;
     tinygltf::Model model;
     std::string error{};
     std::string warning{};
 
-    if (!loader.LoadASCIIFromFile(&model, &error, &warning, path)){
+    if (!loader.LoadASCIIFromFile(&model, &error, &warning, file)){
         DEV_LOG("ASCII Error", error);
         DEV_LOG("ASCII Warning", warning);
     }
 
     /*
-    else if (!loader.LoadBinaryFromFile(&model, &error, &warning, path)){
+    else if (!Engine.LoadBinaryFromFile(&model, &error, &warning, path)){
         DEV_LOG("BINARY Error", error);
         DEV_LOG("BINARY Warning", warning);
 
@@ -516,23 +539,23 @@ void glWrap::Loader::Load(std::string path){
     }
     */
 
-    DEV_LOG("Meshes found: ", model.meshes.size());
+    // DEV_LOG("Meshes found: ", model.meshes.size());
 
     for(int i{}; i < model.meshes.size(); ++i){
         Mesh temp_mesh;
 
         int postfix{0};
-        while (m_models.count(model.meshes[i].name + std::to_string(postfix))){
-            DEV_LOG("Name exists already: ", (model.meshes[i].name + std::to_string(postfix)));
+        while (container.count(model.meshes[i].name + "." + std::to_string(postfix))){
+            // DEV_LOG("Name exists already: ", (model.meshes[i].name + "." + std::to_string(postfix)));
             ++postfix;
         }
 
-        DEV_LOG("Created mesh: ", (model.meshes[i].name + std::to_string(postfix)));
+        // DEV_LOG("Created mesh: ", (model.meshes[i].name + "." + std::to_string(postfix)));
 
         for(int j{}; j < model.meshes[i].primitives.size(); ++j){
 
             temp_mesh.m_primitives.push_back(Primitive());
-            DEV_LOG("Pushed primitive: ", j);
+            // DEV_LOG("Pushed primitive: ", j);
 
             Primitive& prim = temp_mesh.m_primitives.back();
 
@@ -562,110 +585,17 @@ void glWrap::Loader::Load(std::string path){
 
             prim.m_indices = GetIndexData(model, model.meshes[i].primitives[j]);
 
-            DEV_LOG("Generating GL objects", "");
+            // DEV_LOG("Generating GL objects", "");
 
             CreateGlObjects(prim);
 
-            DEV_LOG("GL objects generated", "");
+            // DEV_LOG("GL objects generated", "");
             }
-        m_models.insert({(model.meshes[i].name + std::to_string(postfix)), temp_mesh});
+        container.insert({(model.meshes[i].name + "." + std::to_string(postfix)), temp_mesh});
 
-        DEV_LOG("Inserted mesh: ", (model.meshes[i].name + std::to_string(postfix)));
+        // DEV_LOG("Inserted mesh: ", (model.meshes[i].name + std::to_string(postfix)));
     }
-    DEV_LOG("Meshes created", "");
+    // DEV_LOG("Meshes created", "");
 
     return;
-}
-
-/*
-glWrap::Window* glWrap::Loader::AddWindow(std::string name, glm::ivec2 size, bool visible, glm::vec4 color){
-    if (m_windows.count(name)){
-        DEV_LOG("Window already added: ", name);
-        return NULL;
-    }
-
-    m_windows.insert({name, std::make_unique<Window>(name, size, visible, color)});
-    return m_windows[name].get();
-}
-
-bool glWrap::Loader::RemoveWindow(std::string name){
-    if (m_windows.erase(name)){
-        return 1;
-    }
-    else {
-        DEV_LOG("Window not found: ", name);
-        return 0;
-    }
-}
-
-glWrap::Window* glWrap::Loader::GetWindow(std::string name){
-    if (m_windows.count(name)){
-        return m_windows[name].get();
-    }
-
-    DEV_LOG("Can't find window ", name);
-    return NULL;
-}
-
-int glWrap::Loader::GetWindowAmount(){ return m_windows.size(); }
-*/
-
-void glWrap::Loader::Update(){
-
-    for (int i{ static_cast<int>(m_instances.size()) }; i-- > 0 ; ){
-        if(m_instances[i].ToBeRemoved()){
-            m_instances.erase(m_instances.end() - i);
-        }
-    }
-
-    glClearColor(m_clearColor.r, m_clearColor.g, m_clearColor.b, m_clearColor.a);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    for (auto& instance : m_instances){
-        instance.Draw(m_defaultShader.get(), m_Activecamera);
-    }
-
-    glfwSwapBuffers(m_mainWindow);
-    glfwPollEvents();
-
-    m_deltaTime = glfwGetTime() - m_lastFrameTime;
-    m_lastFrameTime = glfwGetTime();
-}
-
-glWrap::Instance* glWrap::Loader::AddInstance(std::string model){
-    return &(m_instances.emplace_back( &(m_models[model]) ));
-}
-
-glWrap::Mesh* glWrap::Loader::GetMesh(std::string name){
-    if (m_models.count(name)){
-        return &(m_models[name]);
-    }
-    else {
-        DEV_LOG("Mesh not found: ", name);
-        return NULL;
-    }
-}
-
-float glWrap::Loader::GetDeltaTime(){ return m_deltaTime; }
-
-bool glWrap::Loader::isKeyPressed(unsigned int key){
-    return ( glfwGetKey(m_mainWindow, key) == GLFW_PRESS );
-}
-bool glWrap::Loader::isKeyReleased(unsigned int key){
-    return ( glfwGetKey(m_mainWindow, key) == GLFW_RELEASE );
-}
-bool glWrap::Loader::isKeyHeld(unsigned int key){
-    return ( std::count(m_heldKeys.begin(), m_heldKeys.end(), key) );
-}
-
-bool glWrap::Loader::isKeyRepeat(unsigned int key){
-    return ( glfwGetKey(m_mainWindow, key) == GLFW_REPEAT );
-}
-
-bool glWrap::Loader::WindowRequestedClose(){ return glfwWindowShouldClose(m_mainWindow); }
-
-void glWrap::Loader::SetActiveCamera( Camera* camera ){ m_Activecamera = camera; }
-
-glWrap::Loader::~Loader(){
-    glfwTerminate();
 }

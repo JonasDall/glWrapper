@@ -394,4 +394,5 @@ CMakeFiles/testProj.dir/test/main.cpp.obj: \
  C:/msys64/mingw64/include/c++/11.3.0/map \
  C:/msys64/mingw64/include/c++/11.3.0/bits/stl_tree.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/stl_map.h \
- C:/msys64/mingw64/include/c++/11.3.0/bits/stl_multimap.h
+ C:/msys64/mingw64/include/c++/11.3.0/bits/stl_multimap.h \
+ C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/tinygltf/stb_image.h

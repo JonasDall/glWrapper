@@ -14,9 +14,12 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "tinygltf/tinygltf.hpp"
+#include "tinygltf/stb_image.h"
 
 namespace glWrap
 {
+    class Engine;
+
     struct Vertex{
         glm::vec3 pos{};
         glm::vec3 nor{};
@@ -66,7 +69,7 @@ namespace glWrap
 
     class WorldObject{
     protected:
-        Transform   m_transform;
+        Transform   m_transform{};
 
     public:
         Transform GetTransform();
@@ -126,81 +129,61 @@ namespace glWrap
 
     class Instance : public WorldObject {
     private:
-        Mesh*                   m_model;
+        Mesh*                   m_mesh;
         std::vector<Shader*>    m_shaders;
-        bool                    m_remove;
-        bool                    m_visible;
+        bool                    m_visible{true};
 
     public:
-        Instance(Mesh* mesh);
-
         void SetMesh(Mesh* mesh);
         void SetShader(Shader* shader, int primitive);
-        void SetTransform(Transform transform);
-        void Draw(Shader* defaultShader, Camera* camera);
-        void FlagRemoval();
-        bool ToBeRemoved();
-        void SetVisible(bool is);
+        void SetVisibility(bool visibility);
+
+        Mesh* GetMesh();
+        Shader* GetShader(int primitive);
+        bool GetVisibility();
     };
 
-    /*
     class Window{
+    private:
+        // static void keyCall(GLFWwindow* window, int key, int scancode, int action, int mods);
+        // static void framebuffer_size_callback(GLFWwindow* win, int width, int height);
+        GLFWwindow*                         m_window;
+        std::string                         m_name;
+        static std::vector<unsigned int>    m_heldKeys;
+
     public:
-        std::string             m_name;
-        GLFWwindow*             m_window;
-        std::vector<Instance*>  m_instances;
-        glm::vec4               m_color;
+        glm::vec4                           m_color;
+        Camera*                             m_ActiveCamera;
 
         // Window() = default;
-        Window(std::string name, glm::ivec2 size, bool visible, glm::vec4 color);
-        bool AddInstance(Instance* instance);
-        bool RemoveInstance(Instance* instance);
-        void DrawInstances();
+        Window(std::string name, glm::ivec2 size, glm::vec4 color, Camera* camera, GLFWwindow* context);
+        void Swap();
+        void Draw(Instance& instance);
         ~Window();
+
+        // bool isKeyPressed(unsigned int key);
+        // bool isKeyReleased(unsigned int key);
+        // bool isKeyHeld(unsigned int key);
+        // bool isKeyRepeat(unsigned int key);
+        // bool WindowRequestedClose();
     };
-    */
 
-    class Loader{
+    class Engine{
     private:
-
-        // static void framebuffer_size_callback(GLFWwindow* win, int width, int height);
-        static void keyCall(GLFWwindow* window, int key, int scancode, int action, int mods);
-
-        GLFWwindow*                 m_mainWindow;
-        glm::vec4                   m_clearColor;
-
-        std::map<std::string, Mesh> m_models;
-        std::vector<Instance>       m_instances;
-        Camera*                     m_Activecamera;
-        std::unique_ptr<Shader>     m_defaultShader;
-        static std::vector<unsigned int>   m_heldKeys;
-
-        double                      m_lastFrameTime;
-        double                      m_deltaTime;
-        // std::map<std::string, std::unique_ptr<Window>> m_windows;
+        GLFWwindow*             m_context;
+        std::unique_ptr<Shader> m_defaultShader;
+        double                  m_lastFrameTime;
+        double                  m_deltaTime;
+        bool                    m_firstFrame{true};
 
     public:
-
-        Loader(std::string name, glm::ivec2 size, bool visible, glm::vec4 color);
-        void Load(std::string path);
-        // Window* AddWindow(std::string name, glm::ivec2 size, bool visible, glm::vec4 color);
-        // bool RemoveWindow(std::string name);
-        // Window* GetWindow(std::string name);
-        // int GetWindowAmount();
-
-        Instance* AddInstance(std::string model);
-        Mesh* GetMesh(std::string name);
+        Engine();
         void Update();
         float GetDeltaTime();
-
-        bool isKeyPressed(unsigned int key);
-        bool isKeyReleased(unsigned int key);
-        bool isKeyHeld(unsigned int key);
-        bool isKeyRepeat(unsigned int key);
-        bool WindowRequestedClose();
-
-        void SetActiveCamera(Camera* camera);
-
-        ~Loader();
+        Shader* GetDefaultShader();
+        GLFWwindow* GetContext();
+        ~Engine();
     };
+
+    void LoadMesh(std::map<std::string, Mesh>& container, std::string file);
 }

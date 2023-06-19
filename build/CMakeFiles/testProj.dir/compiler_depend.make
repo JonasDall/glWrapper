@@ -402,7 +402,8 @@ CMakeFiles/testProj.dir/test/main.cpp.obj: C:/Users/jonas/Documents/Koding/Works
   C:/msys64/mingw64/include/c++/11.3.0/map \
   C:/msys64/mingw64/include/c++/11.3.0/bits/stl_tree.h \
   C:/msys64/mingw64/include/c++/11.3.0/bits/stl_map.h \
-  C:/msys64/mingw64/include/c++/11.3.0/bits/stl_multimap.h
+  C:/msys64/mingw64/include/c++/11.3.0/bits/stl_multimap.h \
+  C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/tinygltf/stb_image.h
 
 
 C:/msys64/mingw64/include/crtdefs.h:
@@ -1194,6 +1195,8 @@ C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/glm/ext/vector_double1
 C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/glm/ext/vector_int1.hpp:
 
 C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/glm/ext/vector_uint1.hpp:
+
+C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/tinygltf/stb_image.h:
 
 C:/msys64/mingw64/include/c++/11.3.0/cstring:
 
