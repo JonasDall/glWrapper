@@ -32,10 +32,9 @@ int main(){
     instance.SetShader(&shader, 0);
     // instance2.SetShader(&shader, 0);
 
-    bool run = true;
+    while (!window.WindowRequestedClose()){
 
-    while (run){
-        if (window.isKeyHeld(GLFW_KEY_W)) run = false;
+        if (window.isKeyHeld(GLFW_KEY_SPACE)) instance.AddRotation({0.0f, 1.0f, 0.0f});
 
         window.Draw(instance);
         window.Draw(instance2);

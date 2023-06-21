@@ -311,11 +311,17 @@ void glWrap::WorldObject::AddScale(glm::vec3 scale){ m_transform.scl += scale; }
 // 
 
 float glWrap::Camera::GetFOV(){ return m_FOV; }
-// glm::mat4 glWrap::Camera::GetView(){ return glm::lookAt( m_transform.pos, m_transform.pos +  ); }
-glm::mat4 glWrap::Camera::GetProjection(){
-    if(m_perspective) return glm::perspective(glm::radians(m_FOV), (m_aspect.x / m_aspect.y ), m_clip.x, m_clip.y );
-    else return glm::ortho(0.0f, m_aspect.x, 0.0f, m_aspect.y, m_clip.x, m_clip.y);
-}
+
+glm::mat4 glWrap::Camera::GetView(){ return glm::lookAt(GetPosition(), m_target, glm::vec3(0.0f, 1.0f, 0.0f)); }
+
+glm::mat4 glWrap::Camera::GetProjection(){ return m_perspective ? glm::perspective(glm::radians(m_FOV), (m_aspect.x / m_aspect.y ), m_clip.x, m_clip.y ) : glm::ortho(0.0f, m_aspect.x, 0.0f, m_aspect.y, m_clip.x, m_clip.y); }
+
+glm::vec3 glWrap::Camera::GetTarget(){ return m_target; }
+
+void glWrap::Camera::SetTarget(glm::vec3 target){ m_target = target; }
+void glWrap::Camera::AddTarget(glm::vec3 target){ m_target += target; }
+void glWrap::Camera::SetFOV(float FOV){ m_FOV = FOV; }
+void glWrap::Camera::AddFOV(float FOV){ m_FOV += FOV; }
 
 // 
 // *Mesh / Primitive
@@ -421,6 +427,8 @@ void glWrap::Window::Draw(Instance& instance){
 
             currentShader->Use();
 
+            DEV_LOG("Rot Y: ", instance.GetRotation().y);
+
             glm::mat4 model = glm::mat4(1.0f);
 
             // model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -434,13 +442,11 @@ void glWrap::Window::Draw(Instance& instance){
 
             glm::mat4 view = glm::mat4(1.0f);
 
-            view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-
-            // view = glm::translate(view, m_transform.pos);
+            view = m_ActiveCamera->GetView();
 
             glm::mat4 projection = glm::mat4(1.0f);
 
-            projection = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
+            projection = m_ActiveCamera->GetProjection();
 
             currentShader->SetMatrix4("model", model);
             currentShader->SetMatrix4("view", view);

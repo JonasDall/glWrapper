@@ -96,13 +96,18 @@ namespace glWrap
         glm::vec2   m_aspect{800, 600};
         glm::vec2   m_clip{0.1f, 1000.f};
         bool        m_perspective{true};
+        glm::vec3   m_target{};
 
     public:
         float GetFOV();
         glm::mat4 GetView();
         glm::mat4 GetProjection();
-        
+        glm::vec3 GetTarget();
+
+        void SetTarget(glm::vec3 target);
+        void AddTarget(glm::vec3 target);
         void SetFOV(float FOV);
+        void AddFOV(float FOV);
     };
 
     class Primitive{
