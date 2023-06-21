@@ -30,9 +30,9 @@ int main(){
 
     glWrap::Camera camera;
 
-    glWrap::Window window("Window", {500, 500}, {0.0f, 0.0f, 0.0f, 1.0f}, &camera, engine.GetContext());
+    glWrap::Window window("Window", {500, 500}, {0.2f, 0.6f, 0.8f, 1.0f}, &camera, engine.GetContext());
 
-    while (true){
+    while (!window.WindowRequestedClose()){
         window.Draw(instance);
         window.Swap();
 

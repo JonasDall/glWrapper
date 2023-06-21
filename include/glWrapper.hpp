@@ -163,9 +163,9 @@ namespace glWrap
 
         // bool isKeyPressed(unsigned int key);
         // bool isKeyReleased(unsigned int key);
-        // bool isKeyHeld(unsigned int key);
+        bool isKeyHeld(unsigned int key);
         // bool isKeyRepeat(unsigned int key);
-        // bool WindowRequestedClose();
+        bool WindowRequestedClose();
     };
 
     class Engine{

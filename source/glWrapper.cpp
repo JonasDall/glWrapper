@@ -325,11 +325,11 @@ void glWrap::Primitive::Draw(){
 
     // DEV_LOG("Binding VAO: ", m_VAO);
     glBindVertexArray(m_VAO);
+    // DEV_LOG("Binding EBO: ", m_EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
 
     // DEV_LOG("Drawing elements", "");
     glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_SHORT, 0);
-
-    // DEV_LOG("Elements drawn", "");
 }
 
 // 
@@ -379,13 +379,13 @@ glWrap::Window::Window(std::string name, glm::ivec2 size, glm::vec4 color, Camer
 
     glfwMakeContextCurrent(m_window);
 
-    /*
+    
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         DEV_LOG("Failed to initialize GLAD for window ", name);
         glfwTerminate();
     }
-    */
+    
 
     // glfwSetKeyCallback(m_window, keyCall);
 }
@@ -423,13 +423,13 @@ void glWrap::Window::Draw(Instance& instance){
 
             glm::mat4 view = glm::mat4(1.0f);
 
-            view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+            // view = glm::translate(view, glm::vec3(0.0f, 0.0f, 3.0f));
 
             // view = glm::translate(view, m_transform.pos);
 
             glm::mat4 projection = glm::mat4(1.0f);
 
-            projection = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
+            // projection = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
 
             currentShader->SetMatrix4("model", model);
             currentShader->SetMatrix4("view", view);
@@ -439,6 +439,9 @@ void glWrap::Window::Draw(Instance& instance){
         }
     }
 }
+
+bool glWrap::Window::isKeyHeld(unsigned int key) { return glfwGetKey(m_window, key) == GLFW_PRESS; }
+bool glWrap::Window::WindowRequestedClose() { return glfwWindowShouldClose(m_window); }
 
 glWrap::Window::~Window(){
     glfwDestroyWindow(m_window);
@@ -477,7 +480,7 @@ glWrap::Engine::Engine(){
         return;
     }
     
-    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    // glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
     m_context = glfwCreateWindow(10, 10, ".", NULL, NULL);
 
@@ -491,7 +494,7 @@ glWrap::Engine::Engine(){
 
     m_defaultShader = std::make_unique<Shader>(defaultVertexShader, defaultFragmentShader, true);
 
-    glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
+    // glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
 }
 
 void glWrap::Engine::Update(){
