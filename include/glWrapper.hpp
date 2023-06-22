@@ -78,7 +78,7 @@ namespace glWrap
         glm::vec3 GetScale();
         glm::vec3 GetForwardVector();
         glm::vec3 GetUpwardVector();
-        glm::vec3 GetDirection();
+        glm::vec3 GetRightVector();
 
         void SetTransform(Transform transform);
         void SetPosition(glm::vec3 position);
@@ -101,7 +101,7 @@ namespace glWrap
     public:
         float GetFOV();
         glm::mat4 GetView();
-        glm::mat4 GetProjection();
+        glm::mat4 GetProjection(glm::vec2 aspect);
         glm::vec3 GetTarget();
 
         void SetTarget(glm::vec3 target);
@@ -151,17 +151,22 @@ namespace glWrap
     class Window{
     private:
         static void keyCall(GLFWwindow* window, int key, int scancode, int action, int mods);
+        static void frameCall(GLFWwindow* win, int width, int height);
+        // static void mousePosCall(GLFWwindow* window, double xpos, double ypos);
 
-        // static void framebuffer_size_callback(GLFWwindow* win, int width, int height);
         GLFWwindow*                         m_window;
         std::string                         m_name;
-        static std::vector<unsigned int>    m_heldKeys;
-        std::vector<unsigned int>           m_pressedKeys;
         std::unique_ptr<Shader>             m_defaultShader;
         double                              m_lastFrameTime;
         double                              m_deltaTime;
         bool                                m_firstFrame{true};
         bool                                m_windowRequestClose;
+        static std::vector<unsigned int>    m_pressedKeys;
+        static std::vector<unsigned int>    m_releasedKeys;
+        static std::vector<unsigned int>    m_repeatKeys;
+        static glm::dvec2                   m_lastMousePos;
+        static glm::dvec2                   m_deltaMousePos;
+        static glm::ivec2                   m_size;
 
     public:
         glm::vec4                           m_color{0.0f, 0.0f, 0.0f, 1.0f};
@@ -175,11 +180,16 @@ namespace glWrap
         void LoadMesh(std::map<std::string, Mesh>& container, std::string file);
         ~Window();
 
-        bool isKeyPressed(unsigned int key);
-        bool isKeyReleased(unsigned int key);
-        bool isKeyHeld(unsigned int key);
-        bool isKeyRepeat(unsigned int key);
-        bool WindowRequestedClose();
+        bool IsKeyPressed(unsigned int key);
+        bool IsKeyReleased(unsigned int key);
+        bool IsKeyRepeat(unsigned int key);
+        bool IsKeyHeld(unsigned int key);
+        bool IsRequestedClose();
+        glm::dvec2 GetMousePos();
+        glm::dvec2 GetDeltaMousePos();
+
+        void setRequestedClose(bool);
+        void setInputMode(unsigned int mode, unsigned int value);
     };
 
 }

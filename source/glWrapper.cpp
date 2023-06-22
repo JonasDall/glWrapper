@@ -290,12 +290,17 @@ glWrap::Transform glWrap::WorldObject::GetTransform() { return m_transform; }
 glm::vec3 glWrap::WorldObject::GetPosition(){ return m_transform.pos; }
 glm::vec3 glWrap::WorldObject::GetRotation() { return m_transform.rot; }
 glm::vec3 glWrap::WorldObject::GetScale(){ return m_transform.scl; }
-glm::vec3 glWrap::WorldObject::GetDirection(){
-    return glm::vec3{
+
+glm::vec3 glWrap::WorldObject::GetForwardVector(){
+    return glm::normalize(glm::vec3{
         (cos(glm::radians(m_transform.rot.z)) * cos(glm::radians(m_transform.rot.y))),
         sin(glm::radians(m_transform.rot.y)),
-        (sin(glm::radians(m_transform.rot.z)) * cos(glm::radians(m_transform.rot.y)))};
+        (sin(glm::radians(m_transform.rot.z)) * cos(glm::radians(m_transform.rot.y)))});
 }
+
+glm::vec3 glWrap::WorldObject::GetRightVector(){ return glm::normalize(glm::cross(GetForwardVector(), glm::vec3(0.0f, 1.0f, 0.0f))); }
+
+glm::vec3 glWrap::WorldObject::GetUpwardVector(){ return glm::normalize(glm::cross(GetRightVector(), GetForwardVector())); }
 
 void glWrap::WorldObject::SetTransform(Transform transform){ m_transform = transform; }
 void glWrap::WorldObject::SetPosition(glm::vec3 position){ m_transform.pos = position; }
@@ -312,9 +317,9 @@ void glWrap::WorldObject::AddScale(glm::vec3 scale){ m_transform.scl += scale; }
 
 float glWrap::Camera::GetFOV(){ return m_FOV; }
 
-glm::mat4 glWrap::Camera::GetView(){ return glm::lookAt(GetPosition(), m_target, glm::vec3(0.0f, 1.0f, 0.0f)); }
+glm::mat4 glWrap::Camera::GetView(){ return glm::lookAt(GetPosition(), GetPosition() + GetForwardVector(), GetUpwardVector()); }
 
-glm::mat4 glWrap::Camera::GetProjection(){ return m_perspective ? glm::perspective(glm::radians(m_FOV), (m_aspect.x / m_aspect.y ), m_clip.x, m_clip.y ) : glm::ortho(0.0f, m_aspect.x, 0.0f, m_aspect.y, m_clip.x, m_clip.y); }
+glm::mat4 glWrap::Camera::GetProjection(glm::vec2 aspect){ return m_perspective ? glm::perspective(glm::radians(m_FOV), (aspect.x / aspect.y), m_clip.x, m_clip.y ) : glm::ortho(0.0f, aspect.x, 0.0f, aspect.y, m_clip.x, m_clip.y); }
 
 glm::vec3 glWrap::Camera::GetTarget(){ return m_target; }
 
@@ -377,7 +382,12 @@ bool glWrap::Instance::GetVisibility(){ return m_visible; }
 // *Window
 // 
 
-std::vector<unsigned int> glWrap::Window::m_heldKeys;
+std::vector<unsigned int> glWrap::Window::m_pressedKeys;
+std::vector<unsigned int> glWrap::Window::m_releasedKeys;
+std::vector<unsigned int> glWrap::Window::m_repeatKeys;
+glm::dvec2 glWrap::Window::m_lastMousePos;
+glm::dvec2 glWrap::Window::m_deltaMousePos;
+glm::ivec2 glWrap::Window::m_size;
 
 glWrap::Window::Window(std::string name, glm::ivec2 size) : m_name{name}{
 
@@ -397,8 +407,13 @@ glWrap::Window::Window(std::string name, glm::ivec2 size) : m_name{name}{
     }
 
     m_defaultShader = std::make_unique<Shader>(defaultVertexShader, defaultFragmentShader, true);
+    m_lastMousePos = { (size.x / 2), (size.y / 2) };
+    m_size = size;
 
     glfwSetKeyCallback(m_window, keyCall);
+    glfwSetFramebufferSizeCallback(m_window, frameCall);
+    // glfwSetCursorPosCallback(m_window, mousePosCall);
+    glfwGetCursorPos(m_window, &m_lastMousePos.x, &m_lastMousePos.y);
 }
 
 void glWrap::Window::Swap(){
@@ -407,7 +422,16 @@ void glWrap::Window::Swap(){
     glClearColor(m_color.r, m_color.b, m_color.g, m_color.a);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    m_pressedKeys.clear();
+    m_releasedKeys.clear();
+    m_repeatKeys.clear();
     glfwPollEvents();
+
+    glm::dvec2 pos;
+    glfwGetCursorPos(m_window, &pos.x, &pos.y);
+    m_deltaMousePos = { (pos.x - m_lastMousePos.x), (m_lastMousePos.y - pos.y) };
+    m_lastMousePos = pos;
+
     m_deltaTime = glfwGetTime() - m_lastFrameTime;
     m_lastFrameTime = glfwGetTime();
 
@@ -427,11 +451,9 @@ void glWrap::Window::Draw(Instance& instance){
 
             currentShader->Use();
 
-            DEV_LOG("Rot Y: ", instance.GetRotation().y);
-
             glm::mat4 model = glm::mat4(1.0f);
 
-            // model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+            model = glm::rotate(model, glm::radians(instance.GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
 
             // model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
@@ -446,7 +468,7 @@ void glWrap::Window::Draw(Instance& instance){
 
             glm::mat4 projection = glm::mat4(1.0f);
 
-            projection = m_ActiveCamera->GetProjection();
+            projection = m_ActiveCamera->GetProjection((glm::vec2)m_size);
 
             currentShader->SetMatrix4("model", model);
             currentShader->SetMatrix4("view", view);
@@ -459,25 +481,30 @@ void glWrap::Window::Draw(Instance& instance){
 
 float glWrap::Window::GetDeltaTime(){ return m_deltaTime; }
 
-
 void glWrap::Window::keyCall(GLFWwindow* window, int key, int scancode, int action, int mods){
     switch (action){
         case GLFW_PRESS:
-            m_heldKeys.push_back(key);
-            break;
-
+        m_pressedKeys.push_back(key);
+        break;
         case GLFW_RELEASE:
-            for (int i{}; i < m_heldKeys.size(); ++i){
-                if(m_heldKeys[i] == key){
-                    m_heldKeys.erase(m_heldKeys.begin() + i);
-                    break;
-                }
-            }
-            break;
-
+        m_releasedKeys.push_back(key);
+        break;
         case GLFW_REPEAT:
-            break;
+        m_repeatKeys.push_back(key);
+        break;
     }
+}
+
+/*
+void glWrap::Window::mousePosCall(GLFWwindow* window, double xpos, double ypos){
+    m_deltaMousePos = { (xpos - m_lastMousePos.x), (m_lastMousePos.y - ypos) };
+    m_lastMousePos = {xpos, ypos};
+}
+*/
+
+void glWrap::Window::frameCall(GLFWwindow* win, int width, int height){
+    glViewport(0, 0, width, height);
+    m_size = {width, height};
 }
 
 void glWrap::Window::LoadMesh(std::map<std::string, Mesh>& container, std::string file){
@@ -549,11 +576,23 @@ void glWrap::Window::LoadMesh(std::map<std::string, Mesh>& container, std::strin
     return;
 }
 
-bool glWrap::Window::isKeyPressed(unsigned int key){ return glfwGetKey(m_window, key) == GLFW_PRESS; }
-bool glWrap::Window::isKeyReleased(unsigned int key){ return glfwGetKey(m_window, key) == GLFW_RELEASE; }
-bool glWrap::Window::isKeyHeld(unsigned int key){ return glfwGetKey(m_window, key) == GLFW_PRESS; }
-bool glWrap::Window::isKeyRepeat(unsigned int key){ return glfwGetKey(m_window, key) == GLFW_REPEAT; }
-bool glWrap::Window::WindowRequestedClose(){ return glfwWindowShouldClose(m_window); }
+bool glWrap::Window::IsKeyPressed(unsigned int key){ return std::count(m_pressedKeys.begin(), m_pressedKeys.end(), key); }
+bool glWrap::Window::IsKeyReleased(unsigned int key){ return std::count(m_releasedKeys.begin(), m_releasedKeys.end(), key); }
+bool glWrap::Window::IsKeyRepeat(unsigned int key){ return std::count(m_repeatKeys.begin(), m_repeatKeys.end(), key); }
+
+bool glWrap::Window::IsKeyHeld(unsigned int key){ return glfwGetKey(m_window, key) == GLFW_PRESS; }
+bool glWrap::Window::IsRequestedClose(){ return glfwWindowShouldClose(m_window); }
+
+glm::dvec2 glWrap::Window::GetMousePos(){
+    glm::dvec2 pos;
+    glfwGetCursorPos(m_window, &pos.x, &pos.y);
+    return pos;
+}
+
+glm::dvec2 glWrap::Window::GetDeltaMousePos(){ return m_deltaMousePos; }
+
+void glWrap::Window::setRequestedClose(bool should){ glfwSetWindowShouldClose(m_window, should ? GLFW_TRUE : GLFW_FALSE); }
+void glWrap::Window::setInputMode(unsigned int mode, unsigned int value){ glfwSetInputMode(m_window, mode, value); }
 
 glWrap::Window::~Window(){
     glfwTerminate();
