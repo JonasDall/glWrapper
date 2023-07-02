@@ -34,18 +34,24 @@ namespace glWrap
 
     class Shader
     {
-        public:
+    public:
         unsigned int m_ID;
-        
+
+        std::map<std::string, bool> m_bools;
+        std::map<std::string, int> m_ints;
+        std::map<std::string, float> m_floats;
+        std::map<std::string, glm::mat4> m_mat4s;
+
         Shader(std::string vertexPath, std::string fragmentPath);
         Shader(const char* vertexShader, const char* fragmentShader, bool isText);
 
         void Use();
+        void Update();
 
-        void SetBool(const std::string &name, bool value) const;
-        void SetInt(const std::string &name, int value) const;
-        void SetFloat(const std::string &name, float value) const;
-        void SetMatrix4(const std::string &name, glm::mat4 mat) const;
+        void SetBool(const std::string name, bool value);
+        void SetInt(const std::string name, int value);
+        void SetFloat(const std::string name, float value);
+        void SetMatrix4(const std::string name, glm::mat4 mat);
     };
 
     class Texture2D
@@ -103,11 +109,13 @@ namespace glWrap
         glm::mat4 GetView();
         glm::mat4 GetProjection(glm::vec2 aspect);
         glm::vec3 GetTarget();
+        bool IsPerspective();
 
         void SetTarget(glm::vec3 target);
         void AddTarget(glm::vec3 target);
         void SetFOV(float FOV);
         void AddFOV(float FOV);
+        void SetPerspective(bool isTrue);
     };
 
     class Primitive{
@@ -157,6 +165,7 @@ namespace glWrap
         GLFWwindow*                         m_window;
         std::string                         m_name;
         std::unique_ptr<Shader>             m_defaultShader;
+        Shader*                             m_currentShader;
         double                              m_lastFrameTime;
         double                              m_deltaTime;
         bool                                m_firstFrame{true};

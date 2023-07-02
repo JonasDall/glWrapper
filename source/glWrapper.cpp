@@ -211,24 +211,42 @@ void glWrap::Shader::Use(){
     glUseProgram(m_ID);
 }
 
-void glWrap::Shader::SetBool(const std::string &name, bool value) const{
-    if (glGetUniformLocation(m_ID, name.c_str()) != -1)
-        glUniform1i(glGetUniformLocation(m_ID, name.c_str()), (int)value);
+void glWrap::Shader::Update(){
+    for (auto const& value : m_bools){
+        if (glGetUniformLocation(m_ID, value.first.c_str()) != -1)
+            glUniform1i(glGetUniformLocation(m_ID, value.first.c_str()), (int)value.second);
+    }
+
+    for (auto const& value : m_ints){
+        if (glGetUniformLocation(m_ID, value.first.c_str()) != -1)
+        glUniform1i(glGetUniformLocation(m_ID, value.first.c_str()), value.second);
+    }
+
+    for (auto const& value : m_floats){
+        if (glGetUniformLocation(m_ID, value.first.c_str()) != -1)
+        glUniform1f(glGetUniformLocation(m_ID, value.first.c_str()), value.second);
+    }
+
+    for (auto const& value : m_mat4s){
+        if (glGetUniformLocation(m_ID, value.first.c_str()) != -1)
+        glUniformMatrix4fv(glGetUniformLocation(m_ID, value.first.c_str()), 1, GL_FALSE, glm::value_ptr(value.second));
+    }
 }
 
-void glWrap::Shader::SetInt(const std::string &name, int value) const{
-    if (glGetUniformLocation(m_ID, name.c_str()) != -1)
-        glUniform1i(glGetUniformLocation(m_ID, name.c_str()), value);
+void glWrap::Shader::SetBool(const std::string name, bool value){
+    m_bools[name] = value;
 }
 
-void glWrap::Shader::SetFloat(const std::string &name, float value) const{
-    if (glGetUniformLocation(m_ID, name.c_str()) != -1)
-        glUniform1f(glGetUniformLocation(m_ID, name.c_str()), value);
+void glWrap::Shader::SetInt(const std::string name, int value){
+    m_ints[name] = value;
 }
 
-void glWrap::Shader::SetMatrix4(const std::string &name, glm::mat4 mat) const{
-    if (glGetUniformLocation(m_ID, name.c_str()) != -1)
-        glUniformMatrix4fv(glGetUniformLocation(m_ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
+void glWrap::Shader::SetFloat(const std::string name, float value){
+    m_floats[name] = value;
+}
+
+void glWrap::Shader::SetMatrix4(const std::string name, glm::mat4 mat){
+    m_mat4s[name] = mat;
 }
 
 // 
@@ -316,17 +334,16 @@ void glWrap::WorldObject::AddScale(glm::vec3 scale){ m_transform.scl += scale; }
 // 
 
 float glWrap::Camera::GetFOV(){ return m_FOV; }
-
 glm::mat4 glWrap::Camera::GetView(){ return glm::lookAt(GetPosition(), GetPosition() + GetForwardVector(), GetUpwardVector()); }
-
 glm::mat4 glWrap::Camera::GetProjection(glm::vec2 aspect){ return m_perspective ? glm::perspective(glm::radians(m_FOV), (aspect.x / aspect.y), m_clip.x, m_clip.y ) : glm::ortho(0.0f, aspect.x, 0.0f, aspect.y, m_clip.x, m_clip.y); }
-
 glm::vec3 glWrap::Camera::GetTarget(){ return m_target; }
+bool glWrap::Camera::IsPerspective(){ return m_perspective; }
 
 void glWrap::Camera::SetTarget(glm::vec3 target){ m_target = target; }
 void glWrap::Camera::AddTarget(glm::vec3 target){ m_target += target; }
 void glWrap::Camera::SetFOV(float FOV){ m_FOV = FOV; }
 void glWrap::Camera::AddFOV(float FOV){ m_FOV += FOV; }
+void glWrap::Camera::SetPerspective(bool isTrue){ m_perspective = isTrue; }
 
 // 
 // *Mesh / Primitive
@@ -447,20 +464,14 @@ void glWrap::Window::Draw(Instance& instance){
 
         for (int i{}; i < instance.GetMesh()->m_primitives.size(); ++i){
 
-            Shader* currentShader = instance.GetShader(i) ? instance.GetShader(i) : m_defaultShader.get();
-
-            currentShader->Use();
+            if (m_currentShader != (instance.GetShader(i) ? instance.GetShader(i) : m_defaultShader.get())){
+                m_currentShader = instance.GetShader(i) ? instance.GetShader(i) : m_defaultShader.get();
+                m_currentShader->Use();
+            }
 
             glm::mat4 model = glm::mat4(1.0f);
 
             model = glm::rotate(model, glm::radians(instance.GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
-
-            // model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-            // model = glm::rotate(model, glm::radians(m_transform.rot.x), glm::vec3(1.0f, 0.0f, 0.0f));
-
-            // model = glm::rotate(model, glm::radians(m_transform.rot.y), glm::vec3(0.0f, 1.0f, 0.0f));
-            // model = glm::rotate(model, glm::radians(m_transform.rot.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
             glm::mat4 view = glm::mat4(1.0f);
 
@@ -470,9 +481,11 @@ void glWrap::Window::Draw(Instance& instance){
 
             projection = m_ActiveCamera->GetProjection((glm::vec2)m_size);
 
-            currentShader->SetMatrix4("model", model);
-            currentShader->SetMatrix4("view", view);
-            currentShader->SetMatrix4("projection", projection);
+            m_currentShader->SetMatrix4("model", model);
+            m_currentShader->SetMatrix4("view", view);
+            m_currentShader->SetMatrix4("projection", projection);
+
+            m_currentShader->Update();
 
             instance.GetMesh()->m_primitives[i].Draw();
         }

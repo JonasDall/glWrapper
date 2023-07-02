@@ -53,6 +53,10 @@ int main(){
 
         if (window.IsKeyPressed(GLFW_KEY_LEFT_SHIFT)) WalkSensitivity = 0.1f;
         if (window.IsKeyReleased(GLFW_KEY_LEFT_SHIFT)) WalkSensitivity = 0.01f;
+        if (window.IsKeyPressed(GLFW_KEY_G)) camera.SetPerspective( !camera.IsPerspective() );
+
+        shader.Use();
+        shader.SetFloat("color", sin( glfwGetTime()));
 
         window.Draw(instance);
         window.Draw(instance2);
