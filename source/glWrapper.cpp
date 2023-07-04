@@ -8,10 +8,6 @@
     #define DEV_LOG(x, y)
 #endif
 
-// 
-// *SHADER
-//
-
 // *DEFAULT SHADER SOURCE
 
 const char *defaultVertexShader = "#version 330 core\n"
@@ -30,6 +26,10 @@ const char *defaultFragmentShader = "#version 330 core\n"
 "{\n"
 "    FragColor = vec4(0.8, 0.8, 0.8, 1);\n"
 "}\n";
+
+// 
+// *Classless
+// 
 
 static std::string ExtractFile(std::string path) // Extracts the contents of a file to a string
 {
@@ -151,6 +151,61 @@ void CreateGlObjects(glWrap::Primitive &primitive){
     // DEV_LOG("DONE", "");
 }
 
+static GLenum GetChannelType(unsigned int channels){
+    switch(channels)
+    {
+        case 1:
+        return GL_RED;
+
+        case 2:
+        return GL_RG;
+
+        case 3:
+        return GL_RGB;
+
+        case 4:
+        return GL_RGBA;
+    }
+
+    return GL_RGB;
+}
+
+// 
+// *TEXTURE
+// 
+
+glWrap::Texture2D::Texture2D(std::string image, bool flip, GLenum filter, GLenum desiredChannels, std::string name) : m_name{name} {
+    stbi_set_flip_vertically_on_load(flip);
+    int width, height, channels;
+    unsigned char *data = stbi_load(image.c_str(), &width, &height, &channels, 0);
+
+    // std::cout << channels << " channels\n";
+
+    glGenTextures(1, &m_ID);
+    glBindTexture(GL_TEXTURE_2D, m_ID);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+
+    if(data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, desiredChannels, width, height, 0, GetChannelType(channels), GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else std::cout << "Texture not loaded correctly\n";
+
+    stbi_image_free(data);
+}
+
+void glWrap::Texture2D::SetActive(unsigned int unit){
+    glActiveTexture(GL_TEXTURE0 + unit);
+    glBindTexture(GL_TEXTURE_2D, m_ID);
+}
+
+// 
+// *SHADER
+// 
+
 glWrap::Shader::Shader(std::string vertexPath, std::string fragmentPath){
     
     unsigned int vertex, fragment; // Shader objects
@@ -231,73 +286,24 @@ void glWrap::Shader::Update(){
         if (glGetUniformLocation(m_ID, value.first.c_str()) != -1)
         glUniformMatrix4fv(glGetUniformLocation(m_ID, value.first.c_str()), 1, GL_FALSE, glm::value_ptr(value.second));
     }
-}
 
-void glWrap::Shader::SetBool(const std::string name, bool value){
-    m_bools[name] = value;
-}
+    for (int i{}; i < m_textures.size(); ++i){
+        if (m_textures[i]){
+            m_textures[i]->SetActive(i);
 
-void glWrap::Shader::SetInt(const std::string name, int value){
-    m_ints[name] = value;
-}
-
-void glWrap::Shader::SetFloat(const std::string name, float value){
-    m_floats[name] = value;
-}
-
-void glWrap::Shader::SetMatrix4(const std::string name, glm::mat4 mat){
-    m_mat4s[name] = mat;
-}
-
-// 
-// *TEXTURE
-// 
-
-static GLenum GetChannelType(unsigned int channels){
-    switch(channels)
-    {
-        case 1:
-        return GL_RED;
-
-        case 2:
-        return GL_RG;
-
-        case 3:
-        return GL_RGB;
-
-        case 4:
-        return GL_RGBA;
+            if (glGetUniformLocation(m_ID, m_textures[i]->m_name.c_str()) != -1)
+            glUniform1i(glGetUniformLocation(m_ID, m_textures[i]->m_name.c_str()), i);
+        }
     }
-
-    return GL_RGB;
 }
 
-glWrap::Texture2D::Texture2D(std::string image, bool flip, GLenum filter, GLenum desiredChannels){
-    stbi_set_flip_vertically_on_load(flip);
-    int width, height, channels;
-    unsigned char *data = stbi_load(image.c_str(), &width, &height, &channels, 0);
+void glWrap::Shader::SetBool(const std::string name, bool value){ m_bools[name] = value; }
+void glWrap::Shader::SetInt(const std::string name, int value){ m_ints[name] = value; }
+void glWrap::Shader::SetFloat(const std::string name, float value){ m_floats[name] = value; }
+void glWrap::Shader::SetMatrix4(const std::string name, glm::mat4 mat){ m_mat4s[name] = mat; }
 
-    // std::cout << channels << " channels\n";
-
-    glGenTextures(1, &m_ID);
-    glBindTexture(GL_TEXTURE_2D, m_ID);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
-
-    if(data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, desiredChannels, width, height, 0, GetChannelType(channels), GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else std::cout << "Texture not loaded correctly\n";
-
-    stbi_image_free(data);
-}
-
-void glWrap::Texture2D::SetActive(unsigned int unit){
-    glActiveTexture(GL_TEXTURE0 + unit);
-    glBindTexture(GL_TEXTURE_2D, m_ID);
+void glWrap::Shader::AddTexture(Texture2D* texture){
+    m_textures.push_back(texture);
 }
 
 // 
@@ -334,13 +340,12 @@ void glWrap::WorldObject::AddScale(glm::vec3 scale){ m_transform.scl += scale; }
 // 
 
 float glWrap::Camera::GetFOV(){ return m_FOV; }
-glm::mat4 glWrap::Camera::GetView(){ return glm::lookAt(GetPosition(), GetPosition() + GetForwardVector(), GetUpwardVector()); }
+glm::mat4 glWrap::Camera::GetView(){ return m_useTarget ? glm::lookAt(GetPosition(), m_target, GetUpwardVector()) : glm::lookAt(GetPosition(), GetPosition() + GetForwardVector(), GetUpwardVector()); }
 glm::mat4 glWrap::Camera::GetProjection(glm::vec2 aspect){ return m_perspective ? glm::perspective(glm::radians(m_FOV), (aspect.x / aspect.y), m_clip.x, m_clip.y ) : glm::ortho(0.0f, aspect.x, 0.0f, aspect.y, m_clip.x, m_clip.y); }
-glm::vec3 glWrap::Camera::GetTarget(){ return m_target; }
 bool glWrap::Camera::IsPerspective(){ return m_perspective; }
 
 void glWrap::Camera::SetTarget(glm::vec3 target){ m_target = target; }
-void glWrap::Camera::AddTarget(glm::vec3 target){ m_target += target; }
+void glWrap::Camera::UseTarget(bool use){ m_useTarget = use; }
 void glWrap::Camera::SetFOV(float FOV){ m_FOV = FOV; }
 void glWrap::Camera::AddFOV(float FOV){ m_FOV += FOV; }
 void glWrap::Camera::SetPerspective(bool isTrue){ m_perspective = isTrue; }
@@ -423,6 +428,8 @@ glWrap::Window::Window(std::string name, glm::ivec2 size) : m_name{name}{
         glfwTerminate();
     }
 
+    glEnable(GL_DEPTH_TEST);
+
     m_defaultShader = std::make_unique<Shader>(defaultVertexShader, defaultFragmentShader, true);
     m_lastMousePos = { (size.x / 2), (size.y / 2) };
     m_size = size;
@@ -437,7 +444,7 @@ void glWrap::Window::Swap(){
 
     glfwSwapBuffers(m_window);
     glClearColor(m_color.r, m_color.b, m_color.g, m_color.a);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_pressedKeys.clear();
     m_releasedKeys.clear();
@@ -550,7 +557,6 @@ void glWrap::Window::LoadMesh(std::map<std::string, Mesh>& container, std::strin
         }
 
         for(int j{}; j < model.meshes[i].primitives.size(); ++j){
-
             temp_mesh.m_primitives.push_back(Primitive());
 
             Primitive& prim = temp_mesh.m_primitives.back();
@@ -560,12 +566,14 @@ void glWrap::Window::LoadMesh(std::map<std::string, Mesh>& container, std::strin
             std::vector<float> texCoord = GetAttributeData(model, model.meshes[i].primitives[j], "TEXCOORD_0");
 
             int floats = position.size() + normal.size() + texCoord.size();
+            int testfloats = position.size() + normal.size() + texCoord.size() - 3;
 
             std::vector<Vertex>& vertices = prim.m_vertices;
 
             vertices.resize(floats / 8);
 
             for (int x{}; x < vertices.size(); ++x){
+
                 int posLoc = x * 3;
                 int texLoc = x * 2;
 
@@ -575,8 +583,8 @@ void glWrap::Window::LoadMesh(std::map<std::string, Mesh>& container, std::strin
                 vertices[x].nor.x = normal[0 + posLoc];
                 vertices[x].nor.y = normal[1 + posLoc];
                 vertices[x].nor.z = normal[2 + posLoc];
-                vertices[x].tex.x = texCoord[0 + posLoc];
-                vertices[x].tex.y = texCoord[1 + posLoc];
+                vertices[x].tex.x = texCoord[0 + texLoc];
+                vertices[x].tex.y = texCoord[1 + texLoc];
             }
 
             prim.m_indices = GetIndexData(model, model.meshes[i].primitives[j]);

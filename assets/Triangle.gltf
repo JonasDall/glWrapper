@@ -73,7 +73,7 @@
         {
             "bufferView" : 0,
             "componentType" : 5126,
-            "count" : 24,
+            "count" : 100,
             "max" : [
                 0.975633442401886,
                 0.9090396165847778,
@@ -82,32 +82,32 @@
             "min" : [
                 -0.4477745294570923,
                 -0.6407519578933716,
-                2.2343975558669626e-09
+                -0.5847846269607544
             ],
             "type" : "VEC3"
         },
         {
             "bufferView" : 1,
             "componentType" : 5126,
-            "count" : 24,
+            "count" : 100,
             "type" : "VEC3"
         },
         {
             "bufferView" : 2,
             "componentType" : 5126,
-            "count" : 24,
+            "count" : 100,
             "type" : "VEC2"
         },
         {
             "bufferView" : 3,
             "componentType" : 5123,
-            "count" : 36,
+            "count" : 156,
             "type" : "SCALAR"
         },
         {
             "bufferView" : 4,
             "componentType" : 5126,
-            "count" : 13,
+            "count" : 52,
             "max" : [
                 -0.0837780237197876,
                 0.6377991437911987,
@@ -116,74 +116,74 @@
             "min" : [
                 -0.8385765552520752,
                 -0.9592480063438416,
-                5.632493582652387e-09
+                -0.26071059703826904
             ],
             "type" : "VEC3"
         },
         {
             "bufferView" : 5,
             "componentType" : 5126,
-            "count" : 13,
+            "count" : 52,
             "type" : "VEC3"
         },
         {
             "bufferView" : 6,
             "componentType" : 5126,
-            "count" : 13,
+            "count" : 52,
             "type" : "VEC2"
         },
         {
             "bufferView" : 7,
             "componentType" : 5123,
-            "count" : 15,
+            "count" : 72,
             "type" : "SCALAR"
         }
     ],
     "bufferViews" : [
         {
             "buffer" : 0,
-            "byteLength" : 288,
+            "byteLength" : 1200,
             "byteOffset" : 0
         },
         {
             "buffer" : 0,
-            "byteLength" : 288,
-            "byteOffset" : 288
+            "byteLength" : 1200,
+            "byteOffset" : 1200
         },
         {
             "buffer" : 0,
-            "byteLength" : 192,
-            "byteOffset" : 576
+            "byteLength" : 800,
+            "byteOffset" : 2400
         },
         {
             "buffer" : 0,
-            "byteLength" : 72,
-            "byteOffset" : 768
+            "byteLength" : 312,
+            "byteOffset" : 3200
         },
         {
             "buffer" : 0,
-            "byteLength" : 156,
-            "byteOffset" : 840
+            "byteLength" : 624,
+            "byteOffset" : 3512
         },
         {
             "buffer" : 0,
-            "byteLength" : 156,
-            "byteOffset" : 996
+            "byteLength" : 624,
+            "byteOffset" : 4136
         },
         {
             "buffer" : 0,
-            "byteLength" : 104,
-            "byteOffset" : 1152
+            "byteLength" : 416,
+            "byteOffset" : 4760
         },
         {
             "buffer" : 0,
-            "byteLength" : 30,
-            "byteOffset" : 1256
+            "byteLength" : 144,
+            "byteOffset" : 5176
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 1288,
+            "byteLength" : 5320,
             "uri" : "Triangle.bin"
         }
     ]

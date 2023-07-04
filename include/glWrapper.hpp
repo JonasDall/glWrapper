@@ -32,16 +32,38 @@ namespace glWrap
         glm::vec3 scl{};
     };
 
+    class Texture2D
+    {
+        public:
+        unsigned int m_ID;
+        std::string m_name;
+
+        /** @brief Texture2D Constructor 
+         *@param[in] image String path to image location on disk
+         *@param[in] flip If image should be vertically flipped
+         *@param[in] filter Select pixel interpolation: GL_LINEAR or GL_NEAREST
+         *@param[in] desiredChannels Select texture channels: GL_RED, GL_RG, GL_RGB or GL_RGBA
+         */
+        Texture2D(std::string image, bool flip, GLenum filter, GLenum desiredChannels, std::string name);
+
+        /** @brief Description
+         *@param[in] unit GL Texture Unit
+         */
+        void SetActive(unsigned int unit);
+    };
+
     class Shader
     {
-    public:
+    private:
         unsigned int m_ID;
 
-        std::map<std::string, bool> m_bools;
-        std::map<std::string, int> m_ints;
-        std::map<std::string, float> m_floats;
-        std::map<std::string, glm::mat4> m_mat4s;
+        std::map<std::string, bool>         m_bools;
+        std::map<std::string, int>          m_ints;
+        std::map<std::string, float>        m_floats;
+        std::map<std::string, glm::mat4>    m_mat4s;
+        std::vector<Texture2D*>               m_textures;
 
+    public:
         Shader(std::string vertexPath, std::string fragmentPath);
         Shader(const char* vertexShader, const char* fragmentShader, bool isText);
 
@@ -52,25 +74,7 @@ namespace glWrap
         void SetInt(const std::string name, int value);
         void SetFloat(const std::string name, float value);
         void SetMatrix4(const std::string name, glm::mat4 mat);
-    };
-
-    class Texture2D
-    {
-        public:
-        unsigned int m_ID;
-
-        /** @brief Texture2D Constructor 
-         *@param[in] image String path to image location on disk
-         *@param[in] flip If image should be vertically flipped
-         *@param[in] filter Select pixel interpolation: GL_LINEAR or GL_NEAREST
-         *@param[in] desiredChannels Select texture channels: GL_RED, GL_RG, GL_RGB or GL_RGBA
-         */
-        Texture2D(std::string image, bool flip, GLenum filter, GLenum desiredChannels);
-
-        /** @brief Description
-         *@param[in] unit GL Texture Unit
-         */
-        void SetActive(unsigned int unit);
+        void AddTexture(Texture2D* texture);
     };
 
     class WorldObject{
@@ -99,20 +103,19 @@ namespace glWrap
     class Camera : public WorldObject{
     private:
         float       m_FOV{90};
-        glm::vec2   m_aspect{800, 600};
         glm::vec2   m_clip{0.1f, 1000.f};
         bool        m_perspective{true};
-        glm::vec3   m_target{};
+        glm::vec3  m_target{0.f, 0.f, 0.f};
+        bool        m_useTarget{false};
 
     public:
         float GetFOV();
         glm::mat4 GetView();
         glm::mat4 GetProjection(glm::vec2 aspect);
-        glm::vec3 GetTarget();
         bool IsPerspective();
 
         void SetTarget(glm::vec3 target);
-        void AddTarget(glm::vec3 target);
+        void UseTarget(bool use);
         void SetFOV(float FOV);
         void AddFOV(float FOV);
         void SetPerspective(bool isTrue);
