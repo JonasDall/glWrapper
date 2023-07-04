@@ -36,8 +36,7 @@ int main(){
     instance.SetShader(&shader, 0);
     // instance2.SetShader(&shader, 0);
 
-    camera.SetTarget(instance.GetPosition());
-    camera.UseTarget(true);
+    camera.SetTarget(&instance.m_transform.pos);
 
     double WalkSensitivity = 0.01f;
     double MouseSensitivity = 0.1f;

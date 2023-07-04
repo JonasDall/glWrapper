@@ -308,12 +308,7 @@ void glWrap::Shader::AddTexture(Texture2D* texture){
 
 // 
 // *WorldObject
-// 
-
-glWrap::Transform glWrap::WorldObject::GetTransform() { return m_transform; }
-glm::vec3 glWrap::WorldObject::GetPosition(){ return m_transform.pos; }
-glm::vec3 glWrap::WorldObject::GetRotation() { return m_transform.rot; }
-glm::vec3 glWrap::WorldObject::GetScale(){ return m_transform.scl; }
+//
 
 glm::vec3 glWrap::WorldObject::GetForwardVector(){
     return glm::normalize(glm::vec3{
@@ -340,12 +335,11 @@ void glWrap::WorldObject::AddScale(glm::vec3 scale){ m_transform.scl += scale; }
 // 
 
 float glWrap::Camera::GetFOV(){ return m_FOV; }
-glm::mat4 glWrap::Camera::GetView(){ return m_useTarget ? glm::lookAt(GetPosition(), m_target, GetUpwardVector()) : glm::lookAt(GetPosition(), GetPosition() + GetForwardVector(), GetUpwardVector()); }
+glm::mat4 glWrap::Camera::GetView(){ return m_target ? glm::lookAt(m_transform.pos, *m_target, GetUpwardVector()) : glm::lookAt(m_transform.pos, m_transform.pos + GetForwardVector(), GetUpwardVector()); }
 glm::mat4 glWrap::Camera::GetProjection(glm::vec2 aspect){ return m_perspective ? glm::perspective(glm::radians(m_FOV), (aspect.x / aspect.y), m_clip.x, m_clip.y ) : glm::ortho(0.0f, aspect.x, 0.0f, aspect.y, m_clip.x, m_clip.y); }
 bool glWrap::Camera::IsPerspective(){ return m_perspective; }
 
-void glWrap::Camera::SetTarget(glm::vec3 target){ m_target = target; }
-void glWrap::Camera::UseTarget(bool use){ m_useTarget = use; }
+void glWrap::Camera::SetTarget(glm::vec3* target){ m_target = target; }
 void glWrap::Camera::SetFOV(float FOV){ m_FOV = FOV; }
 void glWrap::Camera::AddFOV(float FOV){ m_FOV += FOV; }
 void glWrap::Camera::SetPerspective(bool isTrue){ m_perspective = isTrue; }
@@ -478,7 +472,7 @@ void glWrap::Window::Draw(Instance& instance){
 
             glm::mat4 model = glm::mat4(1.0f);
 
-            model = glm::rotate(model, glm::radians(instance.GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+            model = glm::rotate(model, glm::radians(instance.m_transform.rot.y), glm::vec3(0.0f, 1.0f, 0.0f));
 
             glm::mat4 view = glm::mat4(1.0f);
 

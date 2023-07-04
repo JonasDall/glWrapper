@@ -78,14 +78,9 @@ namespace glWrap
     };
 
     class WorldObject{
-    protected:
+    public:
         Transform   m_transform{};
 
-    public:
-        Transform GetTransform();
-        glm::vec3 GetPosition();
-        glm::vec3 GetRotation();
-        glm::vec3 GetScale();
         glm::vec3 GetForwardVector();
         glm::vec3 GetUpwardVector();
         glm::vec3 GetRightVector();
@@ -105,8 +100,7 @@ namespace glWrap
         float       m_FOV{90};
         glm::vec2   m_clip{0.1f, 1000.f};
         bool        m_perspective{true};
-        glm::vec3  m_target{0.f, 0.f, 0.f};
-        bool        m_useTarget{false};
+        glm::vec3*   m_target{};
 
     public:
         float GetFOV();
@@ -114,8 +108,7 @@ namespace glWrap
         glm::mat4 GetProjection(glm::vec2 aspect);
         bool IsPerspective();
 
-        void SetTarget(glm::vec3 target);
-        void UseTarget(bool use);
+        void SetTarget(glm::vec3* target);
         void SetFOV(float FOV);
         void AddFOV(float FOV);
         void SetPerspective(bool isTrue);
