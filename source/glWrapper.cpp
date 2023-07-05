@@ -174,7 +174,7 @@ static GLenum GetChannelType(unsigned int channels){
 // *TEXTURE
 // 
 
-glWrap::Texture2D::Texture2D(std::string image, bool flip, GLenum filter, GLenum desiredChannels, std::string name) : m_name{name} {
+glWrap::Texture2D::Texture2D(std::string image, bool flip, GLenum filter, GLenum desiredChannels){
     stbi_set_flip_vertically_on_load(flip);
     int width, height, channels;
     unsigned char *data = stbi_load(image.c_str(), &width, &height, &channels, 0);
@@ -287,12 +287,12 @@ void glWrap::Shader::Update(){
         glUniformMatrix4fv(glGetUniformLocation(m_ID, value.first.c_str()), 1, GL_FALSE, glm::value_ptr(value.second));
     }
 
-    for (int i{}; i < m_textures.size(); ++i){
-        if (m_textures[i]){
-            m_textures[i]->SetActive(i);
-
-            if (glGetUniformLocation(m_ID, m_textures[i]->m_name.c_str()) != -1)
-            glUniform1i(glGetUniformLocation(m_ID, m_textures[i]->m_name.c_str()), i);
+    unsigned int unit = 0;
+    for (auto const& value : m_textures){
+        if (glGetUniformLocation(m_ID, value.first.c_str()) != -1){
+            value.second->SetActive(unit);
+            glUniform1i(glGetUniformLocation(m_ID, value.first.c_str()), unit);
+            ++unit;
         }
     }
 }
@@ -301,10 +301,7 @@ void glWrap::Shader::SetBool(const std::string name, bool value){ m_bools[name] 
 void glWrap::Shader::SetInt(const std::string name, int value){ m_ints[name] = value; }
 void glWrap::Shader::SetFloat(const std::string name, float value){ m_floats[name] = value; }
 void glWrap::Shader::SetMatrix4(const std::string name, glm::mat4 mat){ m_mat4s[name] = mat; }
-
-void glWrap::Shader::AddTexture(Texture2D* texture){
-    m_textures.push_back(texture);
-}
+void glWrap::Shader::SetTexture(const std::string name, Texture2D* texture){ m_textures[name] = texture; }
 
 // 
 // *WorldObject
@@ -472,7 +469,11 @@ void glWrap::Window::Draw(Instance& instance){
 
             glm::mat4 model = glm::mat4(1.0f);
 
+            model = glm::translate(model, instance.m_transform.pos);
+            model = glm::scale(model, instance.m_transform.scl);
+            model = glm::rotate(model, glm::radians(instance.m_transform.rot.x), glm::vec3(1.0f, 0.0f, 0.0f));
             model = glm::rotate(model, glm::radians(instance.m_transform.rot.y), glm::vec3(0.0f, 1.0f, 0.0f));
+            model = glm::rotate(model, glm::radians(instance.m_transform.rot.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
             glm::mat4 view = glm::mat4(1.0f);
 

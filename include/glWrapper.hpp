@@ -36,7 +36,6 @@ namespace glWrap
     {
         public:
         unsigned int m_ID;
-        std::string m_name;
 
         /** @brief Texture2D Constructor 
          *@param[in] image String path to image location on disk
@@ -44,7 +43,7 @@ namespace glWrap
          *@param[in] filter Select pixel interpolation: GL_LINEAR or GL_NEAREST
          *@param[in] desiredChannels Select texture channels: GL_RED, GL_RG, GL_RGB or GL_RGBA
          */
-        Texture2D(std::string image, bool flip, GLenum filter, GLenum desiredChannels, std::string name);
+        Texture2D(std::string image, bool flip, GLenum filter, GLenum desiredChannels);
 
         /** @brief Description
          *@param[in] unit GL Texture Unit
@@ -61,7 +60,7 @@ namespace glWrap
         std::map<std::string, int>          m_ints;
         std::map<std::string, float>        m_floats;
         std::map<std::string, glm::mat4>    m_mat4s;
-        std::vector<Texture2D*>               m_textures;
+        std::map<std::string, Texture2D*>   m_textures;
 
     public:
         Shader(std::string vertexPath, std::string fragmentPath);
@@ -74,12 +73,12 @@ namespace glWrap
         void SetInt(const std::string name, int value);
         void SetFloat(const std::string name, float value);
         void SetMatrix4(const std::string name, glm::mat4 mat);
-        void AddTexture(Texture2D* texture);
+        void SetTexture(const std::string name, Texture2D* texture);
     };
 
     class WorldObject{
     public:
-        Transform   m_transform{};
+        Transform   m_transform{ {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f} };
 
         glm::vec3 GetForwardVector();
         glm::vec3 GetUpwardVector();
