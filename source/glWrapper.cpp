@@ -330,6 +330,19 @@ glm::vec3 glWrap::WorldObject::GetRightVector(){ return glm::normalize(glm::cros
 
 glm::vec3 glWrap::WorldObject::GetUpwardVector(){ return glm::normalize(glm::cross(GetRightVector(), GetForwardVector())); }
 
+glm::mat4 glWrap::WorldObject::GetTransformMatrix(){
+
+    glm::mat4 model = glm::mat4(1.0f);
+
+    model = glm::translate(model, m_transform.pos);
+    model = glm::scale(model, m_transform.scl);
+    model = glm::rotate(model, glm::radians(m_transform.rot.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(m_transform.rot.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(m_transform.rot.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    return model;
+}
+
 void glWrap::WorldObject::SetTransform(Transform transform){ m_transform = transform; }
 void glWrap::WorldObject::SetPosition(glm::vec3 position){ m_transform.pos = position; }
 void glWrap::WorldObject::SetRotation(glm::vec3 rotation){ m_transform.rot = rotation; }
@@ -508,27 +521,7 @@ void glWrap::Window::Draw(Instance& instance){
                 m_currentShader = instance.GetShader(i) ? instance.GetShader(i) : m_defaultShader.get();
                 m_currentShader->Use();
             }
-
-            glm::mat4 model = glm::mat4(1.0f);
-
-            model = glm::translate(model, instance.m_transform.pos);
-            model = glm::scale(model, instance.m_transform.scl);
-            model = glm::rotate(model, glm::radians(instance.m_transform.rot.x), glm::vec3(1.0f, 0.0f, 0.0f));
-            model = glm::rotate(model, glm::radians(instance.m_transform.rot.y), glm::vec3(0.0f, 1.0f, 0.0f));
-            model = glm::rotate(model, glm::radians(instance.m_transform.rot.z), glm::vec3(0.0f, 0.0f, 1.0f));
-
-            glm::mat4 view = glm::mat4(1.0f);
-
-            view = m_ActiveCamera->GetView();
-
-            glm::mat4 projection = glm::mat4(1.0f);
-
-            projection = m_ActiveCamera->GetProjection((glm::vec2)m_size);
-
-            m_currentShader->SetMatrix4("model", model);
-            m_currentShader->SetMatrix4("view", view);
-            m_currentShader->SetMatrix4("projection", projection);
-
+            
             m_currentShader->Update();
 
             instance.GetMesh()->m_primitives[i].Draw();
@@ -648,6 +641,8 @@ glm::dvec2 glWrap::Window::GetMousePos(){
 }
 
 glm::dvec2 glWrap::Window::GetDeltaMousePos(){ return m_deltaMousePos; }
+
+glm::ivec2 glWrap::Window::GetSize(){ return m_size; }
 
 void glWrap::Window::SetRequestedClose(bool should){ glfwSetWindowShouldClose(m_window, should ? GLFW_TRUE : GLFW_FALSE); }
 void glWrap::Window::SetInputMode(unsigned int mode, unsigned int value){ glfwSetInputMode(m_window, mode, value); }

@@ -9,12 +9,9 @@
 #endif
 
 int main(){
-
     glWrap::Window window("Window", {1000, 1000});
     window.SetInputMode(GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     window.m_color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
-
-    glfwMakeContextCurrent(window.GetContext());
 
     glWrap::Camera camera;
     camera.SetFOV(90.0f);
@@ -30,6 +27,7 @@ int main(){
     glWrap::Texture2D texture2("../assets/RunningMan.png", false, GL_NEAREST, GL_RGB);
 
     glWrap::Shader shader("../assets/vertex.glsl", "../assets/fragment.glsl");
+    shader.SetTexture("texture1", &texture);
 
     glWrap::Instance instance;
 
@@ -52,7 +50,9 @@ int main(){
         camera.AddRotation({0.0f, 0.0f, window.GetDeltaMousePos().x * MouseSensitivity});
         camera.AddRotation({0.0f, window.GetDeltaMousePos().y * MouseSensitivity, 0.0f});
 
-        shader.SetTexture("texture1", &texture);
+        shader.SetMatrix4("model", instance.GetTransformMatrix());
+        shader.SetMatrix4("view", camera.GetView());
+        shader.SetMatrix4("projection", camera.GetProjection(window.GetSize()));
         window.Draw(instance);
 
         window.Swap();

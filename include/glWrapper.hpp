@@ -88,6 +88,7 @@ namespace glWrap
         glm::vec3 GetForwardVector();
         glm::vec3 GetUpwardVector();
         glm::vec3 GetRightVector();
+        glm::mat4 GetTransformMatrix();
 
         void SetTransform(Transform transform);
         void SetPosition(glm::vec3 position);
@@ -197,6 +198,7 @@ namespace glWrap
         bool IsRequestedClose();
         glm::dvec2 GetMousePos();
         glm::dvec2 GetDeltaMousePos();
+        glm::ivec2 GetSize();
 
         void SetRequestedClose(bool);
         void SetInputMode(unsigned int mode, unsigned int value);
