@@ -8,6 +8,18 @@
     #define DEV_LOG(x, y)
 #endif
 
+/*
+void glWrap::Initialize(){
+
+    if(!glfwInit()){
+        DEV_LOG("Failed to initialize OPENGL", "");
+        return;
+    }
+}
+
+void glWrap::Terminate(){ glfwTerminate(); }
+*/
+
 // *DEFAULT SHADER SOURCE
 
 const char *defaultVertexShader = "#version 330 core\n"
@@ -409,7 +421,35 @@ glWrap::Window::Window(std::string name, glm::ivec2 size) : m_name{name}{
         return;
     }
 
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
     m_window = glfwCreateWindow(size.x, size.y, name.c_str(), NULL, NULL);
+
+    glfwMakeContextCurrent(m_window);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        DEV_LOG("Failed to initialize GLAD for window ", name);
+        glfwTerminate();
+    }
+
+    glEnable(GL_DEPTH_TEST);
+
+    m_defaultShader = std::make_unique<Shader>(defaultVertexShader, defaultFragmentShader, true);
+    m_size = size;
+
+    glfwSetKeyCallback(m_window, keyCall);
+    glfwSetFramebufferSizeCallback(m_window, frameCall);
+    // glfwSetCursorPosCallback(m_window, mousePosCall);
+    glfwGetCursorPos(m_window, &m_lastMousePos.x, &m_lastMousePos.y);
+}
+
+/*
+glWrap::Window::Window(std::string name, glm::ivec2 size, GLFWwindow* context) : m_name{name}{
+
+    m_window = glfwCreateWindow(size.x, size.y, name.c_str(), NULL, context);
 
     glfwMakeContextCurrent(m_window);
 
@@ -430,6 +470,7 @@ glWrap::Window::Window(std::string name, glm::ivec2 size) : m_name{name}{
     // glfwSetCursorPosCallback(m_window, mousePosCall);
     glfwGetCursorPos(m_window, &m_lastMousePos.x, &m_lastMousePos.y);
 }
+*/
 
 void glWrap::Window::Swap(){
 
@@ -458,6 +499,7 @@ void glWrap::Window::Swap(){
 }
 
 void glWrap::Window::Draw(Instance& instance){
+
     if (instance.GetMesh() && instance.GetVisibility() && m_ActiveCamera){
 
         for (int i{}; i < instance.GetMesh()->m_primitives.size(); ++i){
@@ -517,7 +559,7 @@ void glWrap::Window::mousePosCall(GLFWwindow* window, double xpos, double ypos){
 }
 */
 
-void glWrap::Window::frameCall(GLFWwindow* win, int width, int height){
+void glWrap::Window::frameCall(GLFWwindow* window, int width, int height){
     glViewport(0, 0, width, height);
     m_size = {width, height};
 }
@@ -607,9 +649,11 @@ glm::dvec2 glWrap::Window::GetMousePos(){
 
 glm::dvec2 glWrap::Window::GetDeltaMousePos(){ return m_deltaMousePos; }
 
-void glWrap::Window::setRequestedClose(bool should){ glfwSetWindowShouldClose(m_window, should ? GLFW_TRUE : GLFW_FALSE); }
-void glWrap::Window::setInputMode(unsigned int mode, unsigned int value){ glfwSetInputMode(m_window, mode, value); }
+void glWrap::Window::SetRequestedClose(bool should){ glfwSetWindowShouldClose(m_window, should ? GLFW_TRUE : GLFW_FALSE); }
+void glWrap::Window::SetInputMode(unsigned int mode, unsigned int value){ glfwSetInputMode(m_window, mode, value); }
 
 glWrap::Window::~Window(){
     glfwTerminate();
 }
+
+GLFWwindow* glWrap::Window::GetContext(){ return m_window; }

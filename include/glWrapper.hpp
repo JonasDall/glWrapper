@@ -18,6 +18,11 @@
 
 namespace glWrap
 {
+    /*
+    void Initialize();
+    void Terminate();
+    */
+
     class Engine;
 
     struct Vertex{
@@ -154,7 +159,7 @@ namespace glWrap
     class Window{
     private:
         static void keyCall(GLFWwindow* window, int key, int scancode, int action, int mods);
-        static void frameCall(GLFWwindow* win, int width, int height);
+        static void frameCall(GLFWwindow* window, int width, int height);
         // static void mousePosCall(GLFWwindow* window, double xpos, double ypos);
 
         GLFWwindow*                         m_window;
@@ -178,6 +183,7 @@ namespace glWrap
 
         // Window() = default;
         Window(std::string name, glm::ivec2 size);
+        // Window(std::string name, glm::ivec2 size, GLFWwindow* context);
         void Swap();
         void Draw(Instance& instance);
         float GetDeltaTime();
@@ -192,8 +198,9 @@ namespace glWrap
         glm::dvec2 GetMousePos();
         glm::dvec2 GetDeltaMousePos();
 
-        void setRequestedClose(bool);
-        void setInputMode(unsigned int mode, unsigned int value);
-    };
+        void SetRequestedClose(bool);
+        void SetInputMode(unsigned int mode, unsigned int value);
 
+        GLFWwindow* GetContext();
+    };
 }
