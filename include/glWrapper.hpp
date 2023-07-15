@@ -188,7 +188,7 @@ namespace glWrap
         void Swap();
         void Draw(Instance& instance);
         float GetDeltaTime();
-        void LoadMesh(std::map<std::string, Mesh>& container, std::string file);
+        void LoadFile(std::map<std::string, Mesh>& container, std::string file);
         ~Window();
 
         bool IsKeyPressed(unsigned int key);

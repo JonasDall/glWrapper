@@ -21,7 +21,11 @@ int main(){
 
     std::map<std::string, glWrap::Mesh> meshes;
 
-    window.LoadMesh(meshes, "../assets/Cube.gltf");
+    window.LoadFile(meshes, "../assets/Cube.gltf");
+
+    for (auto& mesh : meshes){
+        DEV_LOG("Mesh ", mesh.first);
+    }
 
     glWrap::Texture2D texture("../assets/IdleMan.png", false, GL_NEAREST, GL_RGB);
     glWrap::Texture2D texture2("../assets/RunningMan.png", false, GL_NEAREST, GL_RGB);
@@ -31,7 +35,7 @@ int main(){
 
     glWrap::Instance instance;
 
-    instance.SetMesh(&meshes.at("Cube.0"));
+    instance.SetMesh(&meshes.at("Sphere.0"));
 
     instance.SetShader(&shader, 0);
 

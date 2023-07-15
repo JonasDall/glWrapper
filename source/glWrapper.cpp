@@ -88,6 +88,10 @@ static void CreateShader(unsigned int &id, GLenum type, std::string code){
 
 std::vector<float> GetAttributeData(tinygltf::Model& model, tinygltf::Primitive& primitive, std::string target){
 
+    for (auto& attribute : primitive.attributes){
+        DEV_LOG("Attribute: ", attribute.first);
+    }
+
     tinygltf::BufferView view = model.bufferViews[model.accessors[primitive.attributes.at(target)].bufferView];
     int byteOffset = view.byteOffset;
     int byteLength = view.byteLength;
@@ -557,7 +561,7 @@ void glWrap::Window::frameCall(GLFWwindow* window, int width, int height){
     m_size = {width, height};
 }
 
-void glWrap::Window::LoadMesh(std::map<std::string, Mesh>& container, std::string file){
+void glWrap::Window::LoadFile(std::map<std::string, Mesh>& container, std::string file){
 
     tinygltf::TinyGLTF loader;
     tinygltf::Model model;
