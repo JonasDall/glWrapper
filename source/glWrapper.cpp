@@ -533,8 +533,8 @@ void glWrap::Window::Draw(Instance& instance){
     }
 }
 
-bool glWrap::Window::isKeyHeld(unsigned int key) { return glfwGetKey(m_window, key) == GLFW_PRESS; }
-bool glWrap::Window::WindowRequestedClose() { return glfwWindowShouldClose(m_window); }
+bool glWrap::Window::IsKeyHeld(unsigned int key) { return glfwGetKey(m_window, key) == GLFW_PRESS; }
+bool glWrap::Window::IsRequestedClose() { return glfwWindowShouldClose(m_window); }
 
 float glWrap::Window::GetDeltaTime(){ return m_deltaTime; }
 
@@ -637,9 +637,6 @@ void glWrap::Window::LoadFile(std::map<std::string, Mesh>& container, std::strin
 bool glWrap::Window::IsKeyPressed(unsigned int key){ return std::count(m_pressedKeys.begin(), m_pressedKeys.end(), key); }
 bool glWrap::Window::IsKeyReleased(unsigned int key){ return std::count(m_releasedKeys.begin(), m_releasedKeys.end(), key); }
 bool glWrap::Window::IsKeyRepeat(unsigned int key){ return std::count(m_repeatKeys.begin(), m_repeatKeys.end(), key); }
-
-bool glWrap::Window::IsKeyHeld(unsigned int key){ return glfwGetKey(m_window, key) == GLFW_PRESS; }
-bool glWrap::Window::IsRequestedClose(){ return glfwWindowShouldClose(m_window); }
 
 glm::dvec2 glWrap::Window::GetMousePos(){
     glm::dvec2 pos;
