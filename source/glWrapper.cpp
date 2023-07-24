@@ -20,6 +20,8 @@ void glWrap::Initialize(){
 void glWrap::Terminate(){ glfwTerminate(); }
 */
 
+const std::array<std::string, 6> m_attributeList[]{ "POSITION", "NORMAL", "TEXCOORD_0", "COLOR_0", "JOINTS_0", "WEIGHTS_0" };
+
 // *DEFAULT SHADER SOURCE
 
 const char *defaultVertexShader = "#version 330 core\n"
@@ -86,12 +88,9 @@ static void CreateShader(unsigned int &id, GLenum type, std::string code){
     return;
 }
 
-std::vector<float> GetAttributeData(tinygltf::Model& model, tinygltf::Primitive& primitive, std::string target){
+void GetAttributeData(tinygltf::Model& model, tinygltf::Primitive& primitive, std::string target, glWrap::MeshData& attribute){
 
-    for (auto& attribute : primitive.attributes){
-        DEV_LOG("Attribute: ", attribute.first);
-    }
-
+    tinygltf::Accessor accessor = model.accessors[primitive.attributes.at(target)];
     tinygltf::BufferView view = model.bufferViews[model.accessors[primitive.attributes.at(target)].bufferView];
     int byteOffset = view.byteOffset;
     int byteLength = view.byteLength;
@@ -102,15 +101,27 @@ std::vector<float> GetAttributeData(tinygltf::Model& model, tinygltf::Primitive&
     data.resize(buffer.data.size());
     data = buffer.data;
 
-    std::vector<float> attributeData;
-    attributeData.resize(byteLength / sizeof(float));
+    attribute.m_value.resize(byteLength / sizeof(float));
+    std::memcpy(attribute.m_value.data(), data.data() + byteOffset, byteLength);
 
-    std::memcpy(attributeData.data(), data.data() + byteOffset, byteLength);
+    switch(accessor.type){
+        case 2:
+        attribute.m_size = 2;
+        break;
 
-    return attributeData;
+        case 3:
+        attribute.m_size = 3;
+        break;
+
+        case 4:
+        attribute.m_size = 4;
+        break;
+    }
+
+    return;
 }
 
-std::vector<unsigned short> GetIndexData(tinygltf::Model& model, tinygltf::Primitive& primitive){
+void GetIndexData(tinygltf::Model& model, tinygltf::Primitive& primitive, std::vector<unsigned short>& container){
 
     tinygltf::BufferView view = model.bufferViews[model.accessors[primitive.indices].bufferView];
     int byteOffset = view.byteOffset;
@@ -122,49 +133,32 @@ std::vector<unsigned short> GetIndexData(tinygltf::Model& model, tinygltf::Primi
     data.resize(buffer.data.size());
     data = buffer.data;
 
-    std::vector<unsigned short> indices;
-    indices.resize(byteLength / sizeof(unsigned short));
+    container.resize(byteLength / sizeof(unsigned short));
 
-    std::memcpy(indices.data(), data.data() + byteOffset, byteLength);
+    std::memcpy(container.data(), data.data() + byteOffset, byteLength);
 
-    return indices;
+    return;
 }
 
-void CreateGlObjects(glWrap::Primitive &primitive){
+void CreateGlObjects(glWrap::Mesh &mesh, std::vector<glWrap::MeshData>& data, std::vector<unsigned short>& indices){
 
-    // DEV_LOG("Starting", "");
-    glGenVertexArrays(1, &primitive.m_VAO);
-    // DEV_LOG("VAO", primitive.m_VAO);
-    glGenBuffers(1, &primitive.m_VBO);
-    // DEV_LOG("VBO", primitive.m_VBO);
-    glGenBuffers(1, &primitive.m_EBO);
-    // DEV_LOG("EBO", primitive.m_EBO);
-    // DEV_LOG("Cont", "");
+    glGenVertexArrays(1, &mesh.m_VAO);
+    glBindVertexArray(mesh.m_VAO);
 
-    glBindVertexArray(primitive.m_VAO);
-    // DEV_LOG("Binding VAO", "");
+    glGenBuffers(1, &mesh.m_EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.m_EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GL_UNSIGNED_SHORT), indices.data(), GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ARRAY_BUFFER, primitive.m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, primitive.m_vertices.size() * sizeof(glWrap::Vertex), primitive.m_vertices.data(), GL_STATIC_DRAW);
-    // DEV_LOG("Vertex size", primitive.m_vertices.size());
+    for (int i{}; i < data.size(); ++i){
+        glGenBuffers(1, &mesh.m_attributes[i].m_bufferID);
+        glBindBuffer(GL_ARRAY_BUFFER, mesh.m_attributes[i].m_bufferID);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, primitive.m_EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, primitive.m_indices.size() * sizeof(GL_UNSIGNED_SHORT), primitive.m_indices.data(), GL_STATIC_DRAW);
-    // DEV_LOG("Index size", primitive.m_indices.size());
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-    // DEV_LOG("Attrib arrays generated", "");
+        glBufferData(GL_ARRAY_BUFFER, data[i].m_size * sizeof(float), data[i].m_value.data(), GL_STATIC_DRAW);
+        glVertexAttribPointer(i, data[i].m_size, GL_FLOAT, GL_FALSE, data[i].m_size * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(i);
+    }
 
     glBindVertexArray(0);
-
-    // DEV_LOG("DONE", "");
 }
 
 static GLenum GetChannelType(unsigned int channels){
@@ -266,14 +260,15 @@ glWrap::Shader::Shader(const char* vertexShader, const char* fragmentShader, boo
     int success; // Error handle type
     char log[512]; // Error message
     glGetProgramiv(m_ID, GL_LINK_STATUS, &success);
+
+    glDeleteShader(vertex);
+    glDeleteShader(fragment);
     if(!success)
     {
         glGetProgramInfoLog(m_ID, 512, NULL, log);
         DEV_LOG("Failed linking: ", log);
+        return;
     }
-
-    glDeleteShader(vertex);
-    glDeleteShader(fragment);
 
     return;
 }
@@ -284,32 +279,32 @@ void glWrap::Shader::Use(){
 
 void glWrap::Shader::Update(){
     for (auto const& value : m_bools){
-        if (glGetUniformLocation(m_ID, value.first.c_str()) != -1)
+        // if (glGetUniformLocation(m_ID, value.first.c_str()) != -1)
             glUniform1i(glGetUniformLocation(m_ID, value.first.c_str()), (int)value.second);
     }
 
     for (auto const& value : m_ints){
-        if (glGetUniformLocation(m_ID, value.first.c_str()) != -1)
+        // if (glGetUniformLocation(m_ID, value.first.c_str()) != -1)
         glUniform1i(glGetUniformLocation(m_ID, value.first.c_str()), value.second);
     }
 
     for (auto const& value : m_floats){
-        if (glGetUniformLocation(m_ID, value.first.c_str()) != -1)
+        // if (glGetUniformLocation(m_ID, value.first.c_str()) != -1)
         glUniform1f(glGetUniformLocation(m_ID, value.first.c_str()), value.second);
     }
 
     for (auto const& value : m_mat4s){
-        if (glGetUniformLocation(m_ID, value.first.c_str()) != -1)
+        // if (glGetUniformLocation(m_ID, value.first.c_str()) != -1)
         glUniformMatrix4fv(glGetUniformLocation(m_ID, value.first.c_str()), 1, GL_FALSE, glm::value_ptr(value.second));
     }
 
     unsigned int unit = 0;
     for (auto const& value : m_textures){
-        if (glGetUniformLocation(m_ID, value.first.c_str()) != -1){
+        // if (glGetUniformLocation(m_ID, value.first.c_str()) != -1){
             value.second->SetActive(unit);
             glUniform1i(glGetUniformLocation(m_ID, value.first.c_str()), unit);
             ++unit;
-        }
+        // }
     }
 }
 
@@ -347,11 +342,6 @@ glm::mat4 glWrap::WorldObject::GetTransformMatrix(){
     return model;
 }
 
-void glWrap::WorldObject::SetTransform(Transform transform){ m_transform = transform; }
-void glWrap::WorldObject::SetPosition(glm::vec3 position){ m_transform.pos = position; }
-void glWrap::WorldObject::SetRotation(glm::vec3 rotation){ m_transform.rot = rotation; }
-void glWrap::WorldObject::SetScale(glm::vec3 scale){ m_transform.scl = scale; }
-
 void glWrap::WorldObject::AddPosition(glm::vec3 position){ m_transform.pos += position; }
 void glWrap::WorldObject::AddRotation(glm::vec3 rotation){ m_transform.rot += rotation; }
 void glWrap::WorldObject::AddScale(glm::vec3 scale){ m_transform.scl += scale; }
@@ -371,10 +361,10 @@ void glWrap::Camera::AddFOV(float FOV){ m_FOV += FOV; }
 void glWrap::Camera::SetPerspective(bool isTrue){ m_perspective = isTrue; }
 
 // 
-// *Mesh / Primitive
+// *Model / Mesh
 // 
 
-void glWrap::Primitive::Draw(){
+void glWrap::Mesh::Draw(){
 
     // DEV_LOG("Binding VAO: ", m_VAO);
     glBindVertexArray(m_VAO);
@@ -382,43 +372,20 @@ void glWrap::Primitive::Draw(){
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
 
     // DEV_LOG("Drawing elements", "");
-    glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_SHORT, 0);
+    glDrawElements(GL_TRIANGLES, m_indexAmount, GL_UNSIGNED_SHORT, 0);
 }
 
 // 
-// *Instance
+// *Copy
 // 
 
-void glWrap::Instance::SetMesh(Mesh* mesh){
-    m_mesh = mesh;
-    m_shaders.resize(mesh->m_primitives.size());
-    // DEV_LOG("Shaders required: ", m_shaders.size());
-}
+void glWrap::Copy::SetModel(Model* mesh){ m_mesh = mesh; }
 
-void glWrap::Instance::SetShader(Shader* shader, int primitive){
-    if (primitive < m_shaders.size()){
-        m_shaders[primitive] = shader;
-    }
-    else {
-        DEV_LOG("Wrong primitive index, max is: ", m_shaders.size() - 1);
-    }
-}
+void glWrap::Copy::SetVisibility(bool visibility){ m_visible = visibility; }
 
-void glWrap::Instance::SetVisibility(bool visibility){ m_visible = visibility; }
+glWrap::Model* glWrap::Copy::GetModel(){ return m_mesh; }
 
-glWrap::Mesh* glWrap::Instance::GetMesh(){ return m_mesh; }
-
-glWrap::Shader* glWrap::Instance::GetShader(int primitive){
-    if (primitive < m_shaders.size()){
-        return m_shaders[primitive];
-    }
-    else {
-        // DEV_LOG("Wrong primitive index, max is: ", m_shaders.size() - 1);
-        return nullptr;
-    }
-}
-
-bool glWrap::Instance::GetVisibility(){ return m_visible; }
+bool glWrap::Copy::GetVisibility(){ return m_visible; }
 
 // 
 // *Window
@@ -454,7 +421,6 @@ glWrap::Window::Window(std::string name, glm::ivec2 size) : m_name{name}{
 
     glEnable(GL_DEPTH_TEST);
 
-    m_defaultShader = std::make_unique<Shader>(defaultVertexShader, defaultFragmentShader, true);
     m_size = size;
 
     glfwSetKeyCallback(m_window, keyCall);
@@ -515,23 +481,18 @@ void glWrap::Window::Swap(){
     m_firstFrame = false;
 }
 
-void glWrap::Window::Draw(Instance& instance){
+/*
+void glWrap::Window::Draw(Copy& copy){
 
-    if (instance.GetMesh() && instance.GetVisibility() && m_ActiveCamera){
+    if (copy.GetModel() && copy.GetVisibility() && m_ActiveCamera){
 
-        for (int i{}; i < instance.GetMesh()->m_primitives.size(); ++i){
+        for (int i{}; i < copy.GetModel()->m_meshes.size(); ++i){
 
-            if (m_currentShader != (instance.GetShader(i) ? instance.GetShader(i) : m_defaultShader.get())){
-                m_currentShader = instance.GetShader(i) ? instance.GetShader(i) : m_defaultShader.get();
-                m_currentShader->Use();
-            }
-            
-            m_currentShader->Update();
-
-            instance.GetMesh()->m_primitives[i].Draw();
+            copy.GetModel()->m_meshes[i].Draw();
         }
     }
 }
+*/
 
 bool glWrap::Window::IsKeyHeld(unsigned int key) { return glfwGetKey(m_window, key) == GLFW_PRESS; }
 bool glWrap::Window::IsRequestedClose() { return glfwWindowShouldClose(m_window); }
@@ -564,7 +525,7 @@ void glWrap::Window::frameCall(GLFWwindow* window, int width, int height){
     m_size = {width, height};
 }
 
-void glWrap::Window::LoadFile(std::map<std::string, Mesh>& container, std::string file){
+void glWrap::Window::LoadFile(std::map<std::string, Model>& container, std::string file){
 
     tinygltf::TinyGLTF loader;
     tinygltf::Model model;
@@ -576,60 +537,40 @@ void glWrap::Window::LoadFile(std::map<std::string, Mesh>& container, std::strin
         DEV_LOG("ASCII Warning", warning);
     }
 
-    /*
-    else if (!Engine.LoadBinaryFromFile(&model, &error, &warning, path)){
-        DEV_LOG("BINARY Error", error);
-        DEV_LOG("BINARY Warning", warning);
-
-        return;
-    }
-    */
-
     for(int i{}; i < model.meshes.size(); ++i){
-        Mesh temp_mesh;
+
+        DEV_LOG("Model: ", model.meshes[i].name);
 
         int postfix{0};
         while (container.count(model.meshes[i].name + "." + std::to_string(postfix))){
             ++postfix;
         }
 
-        for(int j{}; j < model.meshes[i].primitives.size(); ++j){
-            temp_mesh.m_primitives.push_back(Primitive());
+        container.emplace(model.meshes[i].name + "." + std::to_string(postfix), Model{});
+        Model& temp_model = container[model.meshes[i].name + "." + std::to_string(postfix)];
 
-            Primitive& prim = temp_mesh.m_primitives.back();
+        for (int j{}; j < model.meshes[i].primitives.size(); ++j){
 
-            std::vector<float> position = GetAttributeData(model, model.meshes[i].primitives[j], "POSITION");
-            std::vector<float> normal = GetAttributeData(model, model.meshes[i].primitives[j], "NORMAL");
-            std::vector<float> texCoord = GetAttributeData(model, model.meshes[i].primitives[j], "TEXCOORD_0");
+            temp_model.m_meshes.push_back(Mesh());
+            Mesh& temp_mesh = temp_model.m_meshes.back();
 
-            int floats = position.size() + normal.size() + texCoord.size();
-            int testfloats = position.size() + normal.size() + texCoord.size() - 3;
+            std::vector<MeshData> data;
 
-            std::vector<Vertex>& vertices = prim.m_vertices;
-
-            vertices.resize(floats / 8);
-
-            for (int x{}; x < vertices.size(); ++x){
-
-                int posLoc = x * 3;
-                int texLoc = x * 2;
-
-                vertices[x].pos.x = position[0 + posLoc];
-                vertices[x].pos.y = position[1 + posLoc];
-                vertices[x].pos.z = position[2 + posLoc];
-                vertices[x].nor.x = normal[0 + posLoc];
-                vertices[x].nor.y = normal[1 + posLoc];
-                vertices[x].nor.z = normal[2 + posLoc];
-                vertices[x].tex.x = texCoord[0 + texLoc];
-                vertices[x].tex.y = texCoord[1 + texLoc];
+            for (int i{}; m_attributeList->size(); ++i){
+                if (model.meshes[i].primitives[j].attributes.count(m_attributeList->at(i))){
+                    data.emplace_back();
+                    GetAttributeData(model, model.meshes[i].primitives[j], m_attributeList->at(i), data[i]);
+                    Attribute& attrib = temp_mesh.m_attributes.emplace_back();
+                    attrib.m_name = m_attributeList->at(i);
+                }
             }
 
-            prim.m_indices = GetIndexData(model, model.meshes[i].primitives[j]);
+            std::vector<unsigned short> indices;
+            GetIndexData(model, model.meshes[i].primitives[j], indices);
+            temp_mesh.m_indexAmount = indices.size();
 
-            CreateGlObjects(prim);
-
+            CreateGlObjects(temp_mesh, data, indices);
             }
-        container.insert({(model.meshes[i].name + "." + std::to_string(postfix)), temp_mesh});
     }
     return;
 }

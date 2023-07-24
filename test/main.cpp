@@ -15,29 +15,27 @@ int main(){
 
     glWrap::Camera camera;
     camera.SetFOV(90.0f);
-    camera.SetRotation({0.0f, 0.0f, -90.0f});
-    camera.SetPosition({0.0f, 0.0f, 3.0f});
-    window.m_ActiveCamera = &camera;
+    camera.m_transform.rot = {0.0f, 0.0f, -90.0f};
+    camera.m_transform.pos = {0.0f, 0.0f, 3.0f};
 
-    std::map<std::string, glWrap::Mesh> meshes;
+    std::map<std::string, glWrap::Model> meshes;
 
     window.LoadFile(meshes, "../assets/Cube.gltf");
 
     for (auto& mesh : meshes){
-        DEV_LOG("Mesh ", mesh.first);
+        DEV_LOG("Model ", mesh.first);
     }
 
     glWrap::Texture2D texture("../assets/IdleMan.png", false, GL_NEAREST, GL_RGB);
-    glWrap::Texture2D texture2("../assets/RunningMan.png", false, GL_NEAREST, GL_RGB);
+    // glWrap::Texture2D texture2("../assets/RunningMan.png", false, GL_NEAREST, GL_RGB);
 
     glWrap::Shader shader("../assets/vertex.glsl", "../assets/fragment.glsl");
+    shader.Use();
     shader.SetTexture("texture1", &texture);
 
-    glWrap::Instance instance;
+    glWrap::Copy copy;
 
-    instance.SetMesh(&meshes.at("Sphere.0"));
-
-    instance.SetShader(&shader, 0);
+    copy.SetModel(&meshes.at("Cube.0"));
 
     double WalkSensitivity = 0.05f;
     double MouseSensitivity = 0.1f;
@@ -54,10 +52,15 @@ int main(){
         camera.AddRotation({0.0f, 0.0f, window.GetDeltaMousePos().x * MouseSensitivity});
         camera.AddRotation({0.0f, window.GetDeltaMousePos().y * MouseSensitivity, 0.0f});
 
-        shader.SetMatrix4("model", instance.GetTransformMatrix());
+        shader.SetMatrix4("model", copy.GetTransformMatrix());
         shader.SetMatrix4("view", camera.GetView());
         shader.SetMatrix4("projection", camera.GetProjection(window.GetSize()));
-        window.Draw(instance);
+
+        shader.Update();
+
+        meshes.at("Cube.0").m_meshes[0].Draw();
+
+        // window.Draw(copy);
 
         window.Swap();
     }

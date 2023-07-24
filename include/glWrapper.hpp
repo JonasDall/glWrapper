@@ -25,10 +25,14 @@ namespace glWrap
 
     class Engine;
 
-    struct Vertex{
-        glm::vec3 pos{};
-        glm::vec3 nor{};
-        glm::vec2 tex{};
+    struct MeshData{
+        std::vector<float>  m_value;
+        unsigned int        m_size;
+    };
+
+    struct Attribute{
+        std::string m_name;
+        GLuint      m_bufferID;
     };
 
     struct Transform{
@@ -90,11 +94,6 @@ namespace glWrap
         glm::vec3 GetRightVector();
         glm::mat4 GetTransformMatrix();
 
-        void SetTransform(Transform transform);
-        void SetPosition(glm::vec3 position);
-        void SetRotation(glm::vec3 rotation);
-        void SetScale(glm::vec3 scale);
-
         void AddPosition(glm::vec3 position);
         void AddRotation(glm::vec3 rotation);
         void AddScale(glm::vec3 scale);
@@ -119,41 +118,30 @@ namespace glWrap
         void SetPerspective(bool isTrue);
     };
 
-    class Primitive{
-        public:
+    class Mesh{
+    public:
+        std::vector<Attribute>  m_attributes;
+        unsigned int            m_indexAmount;
+        GLuint m_VAO, m_EBO;
 
-        std::vector<Vertex>         m_vertices;
-        std::vector<unsigned short> m_indices;
-        unsigned int                m_material;
-
-        GLuint                      m_VBO,
-                                    m_VAO,
-                                    m_EBO;
-
-        Primitive() = default;
         void Draw();
     };
 
-    class Mesh{
-        public:
-        std::vector<Primitive> m_primitives;
-
-        Mesh() = default;
+    class Model{
+    public:
+        std::vector<Mesh>                           m_meshes;
     };
-
-    class Instance : public WorldObject {
+    
+    class Copy : public WorldObject {
     private:
-        Mesh*                   m_mesh;
-        std::vector<Shader*>    m_shaders;
+        Model*                   m_mesh;
         bool                    m_visible{true};
 
     public:
-        void SetMesh(Mesh* mesh);
-        void SetShader(Shader* shader, int primitive);
+        void SetModel(Model* mesh);
         void SetVisibility(bool visibility);
 
-        Mesh* GetMesh();
-        Shader* GetShader(int primitive);
+        Model* GetModel();
         bool GetVisibility();
     };
 
@@ -165,8 +153,6 @@ namespace glWrap
 
         GLFWwindow*                         m_window;
         std::string                         m_name;
-        std::unique_ptr<Shader>             m_defaultShader;
-        Shader*                             m_currentShader;
         double                              m_lastFrameTime;
         double                              m_deltaTime;
         bool                                m_firstFrame{true};
@@ -180,15 +166,14 @@ namespace glWrap
 
     public:
         glm::vec4                           m_color{0.0f, 0.0f, 0.0f, 1.0f};
-        Camera*                             m_ActiveCamera{nullptr};
 
         // Window() = default;
         Window(std::string name, glm::ivec2 size);
         // Window(std::string name, glm::ivec2 size, GLFWwindow* context);
         void Swap();
-        void Draw(Instance& instance);
+        // void Draw(Copy& copy);
         float GetDeltaTime();
-        void LoadFile(std::map<std::string, Mesh>& container, std::string file);
+        void LoadFile(std::map<std::string, Model>& container, std::string file);
         ~Window();
 
         bool IsKeyPressed(unsigned int key);
