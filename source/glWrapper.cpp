@@ -88,8 +88,9 @@ static void CreateShader(unsigned int &id, GLenum type, std::string code){
     return;
 }
 
-void GetAttributeData(tinygltf::Model& model, tinygltf::Primitive& primitive, std::string target, glWrap::MeshData& attribute){
+void GetAttributeData(tinygltf::Model& model, tinygltf::Primitive& primitive, std::string target, glWrap::MeshData& mesh){
 
+    glWrap::AttributeData& currentAttribute = mesh.attributes[target];
     tinygltf::Accessor accessor = model.accessors[primitive.attributes.at(target)];
     tinygltf::BufferView view = model.bufferViews[model.accessors[primitive.attributes.at(target)].bufferView];
     int byteOffset = view.byteOffset;
@@ -101,23 +102,22 @@ void GetAttributeData(tinygltf::Model& model, tinygltf::Primitive& primitive, st
     data.resize(buffer.data.size());
     data = buffer.data;
 
-    attribute.m_value.resize(byteLength / sizeof(float));
-    std::memcpy(attribute.m_value.data(), data.data() + byteOffset, byteLength);
+    currentAttribute.data.resize(byteLength / sizeof(float));
+    std::memcpy(currentAttribute.data.data(), data.data() + byteOffset, byteLength);
 
     switch(accessor.type){
         case 2:
-        attribute.m_size = 2;
+        currentAttribute.size = 2;
         break;
 
         case 3:
-        attribute.m_size = 3;
+        currentAttribute.size = 3;
         break;
 
         case 4:
-        attribute.m_size = 4;
+        currentAttribute.size = 4;
         break;
     }
-
     return;
 }
 
@@ -138,27 +138,6 @@ void GetIndexData(tinygltf::Model& model, tinygltf::Primitive& primitive, std::v
     std::memcpy(container.data(), data.data() + byteOffset, byteLength);
 
     return;
-}
-
-void CreateGlObjects(glWrap::Mesh &mesh, std::vector<glWrap::MeshData>& data, std::vector<unsigned short>& indices){
-
-    glGenVertexArrays(1, &mesh.m_VAO);
-    glBindVertexArray(mesh.m_VAO);
-
-    glGenBuffers(1, &mesh.m_EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.m_EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GL_UNSIGNED_SHORT), indices.data(), GL_STATIC_DRAW);
-
-    for (int i{}; i < data.size(); ++i){
-        glGenBuffers(1, &mesh.m_attributes[i].m_bufferID);
-        glBindBuffer(GL_ARRAY_BUFFER, mesh.m_attributes[i].m_bufferID);
-
-        glBufferData(GL_ARRAY_BUFFER, data[i].m_size * sizeof(float), data[i].m_value.data(), GL_STATIC_DRAW);
-        glVertexAttribPointer(i, data[i].m_size, GL_FLOAT, GL_FALSE, data[i].m_size * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(i);
-    }
-
-    glBindVertexArray(0);
 }
 
 static GLenum GetChannelType(unsigned int channels){
@@ -364,6 +343,61 @@ void glWrap::Camera::SetPerspective(bool isTrue){ m_perspective = isTrue; }
 // *Model / Mesh
 // 
 
+glWrap::Mesh::Mesh(){
+    glGenVertexArrays(1, &m_VAO);
+}
+
+void glWrap::Mesh::SetAttributeData(AttributeData& attribute, unsigned int layout, unsigned int divisor, GLenum drawType){
+    glBindVertexArray(m_VAO);
+
+    if (m_buffers.size() <= layout){
+        m_buffers.resize(layout + 1);
+        glGenBuffers(1, &m_buffers[layout]);
+        glBindBuffer(GL_ARRAY_BUFFER, m_buffers[layout]);
+    }
+    else if ( m_buffers[layout] == 0 ) {
+        glGenBuffers(1, &m_buffers[layout]);
+        glBindBuffer(GL_ARRAY_BUFFER, m_buffers[layout]);
+    }
+
+    glBufferData(GL_ARRAY_BUFFER, attribute.data.size() * sizeof(float), attribute.data.data(), drawType);
+    glVertexAttribPointer(layout, attribute.size, GL_FLOAT, GL_FALSE, attribute.size * sizeof(float), (void*)0);
+    glVertexAttribDivisor(layout, divisor);
+    glEnableVertexAttribArray(layout);
+
+    glBindVertexArray(0);
+}
+
+void glWrap::Mesh::SetAttributeData(AttributeData& attribute, unsigned int layout){
+    glBindVertexArray(m_VAO);
+
+    if (m_buffers.size() <= layout){
+        m_buffers.resize(layout + 1);
+        glGenBuffers(1, &m_buffers[layout]);
+        glBindBuffer(GL_ARRAY_BUFFER, m_buffers[layout]);
+    }
+    else if ( m_buffers[layout] == 0 ) {
+        glGenBuffers(1, &m_buffers[layout]);
+        glBindBuffer(GL_ARRAY_BUFFER, m_buffers[layout]);
+    }
+
+    glBufferData(GL_ARRAY_BUFFER, attribute.data.size() * sizeof(float), attribute.data.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(layout, attribute.size, GL_FLOAT, GL_FALSE, attribute.size * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(layout);
+
+    glBindVertexArray(0);
+}
+
+void glWrap::Mesh::SetIndexData(std::vector<unsigned short>& indices){
+    if (!EBO_generated){
+        glGenBuffers(1, &m_EBO);
+        EBO_generated = true;
+    }
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GL_UNSIGNED_SHORT), indices.data(), GL_STATIC_DRAW);
+}
+
 void glWrap::Mesh::Draw(){
 
     // DEV_LOG("Binding VAO: ", m_VAO);
@@ -374,18 +408,6 @@ void glWrap::Mesh::Draw(){
     // DEV_LOG("Drawing elements", "");
     glDrawElements(GL_TRIANGLES, m_indexAmount, GL_UNSIGNED_SHORT, 0);
 }
-
-// 
-// *Copy
-// 
-
-void glWrap::Copy::SetModel(Model* mesh){ m_mesh = mesh; }
-
-void glWrap::Copy::SetVisibility(bool visibility){ m_visible = visibility; }
-
-glWrap::Model* glWrap::Copy::GetModel(){ return m_mesh; }
-
-bool glWrap::Copy::GetVisibility(){ return m_visible; }
 
 // 
 // *Window
@@ -525,7 +547,7 @@ void glWrap::Window::frameCall(GLFWwindow* window, int width, int height){
     m_size = {width, height};
 }
 
-void glWrap::Window::LoadFile(std::map<std::string, Model>& container, std::string file){
+void glWrap::Window::LoadGLTF(std::map<std::string, ModelData>& container, std::string file){
 
     tinygltf::TinyGLTF loader;
     tinygltf::Model model;
@@ -547,29 +569,28 @@ void glWrap::Window::LoadFile(std::map<std::string, Model>& container, std::stri
         }
 
         container.emplace(model.meshes[i].name + "." + std::to_string(postfix), Model{});
-        Model& temp_model = container[model.meshes[i].name + "." + std::to_string(postfix)];
+        ModelData& current_model = container[model.meshes[i].name + "." + std::to_string(postfix)];
 
         for (int j{}; j < model.meshes[i].primitives.size(); ++j){
 
-            temp_model.m_meshes.push_back(Mesh());
-            Mesh& temp_mesh = temp_model.m_meshes.back();
+            current_model.meshes.push_back(MeshData());
+            MeshData& current_mesh = current_model.meshes.back();
 
-            std::vector<MeshData> data;
-
-            for (int i{}; m_attributeList->size(); ++i){
-                if (model.meshes[i].primitives[j].attributes.count(m_attributeList->at(i))){
-                    data.emplace_back();
-                    GetAttributeData(model, model.meshes[i].primitives[j], m_attributeList->at(i), data[i]);
-                    Attribute& attrib = temp_mesh.m_attributes.emplace_back();
-                    attrib.m_name = m_attributeList->at(i);
-                }
+            for (auto& attribute : model.meshes[i].primitives[j].attributes){
+                GetAttributeData(model, model.meshes[i].primitives[j], attribute.first, current_mesh);
             }
 
-            std::vector<unsigned short> indices;
-            GetIndexData(model, model.meshes[i].primitives[j], indices);
-            temp_mesh.m_indexAmount = indices.size();
+            // for (int i{}; m_attributeList->size(); ++i){
+            //     if (model.meshes[i].primitives[j].attributes.count(m_attributeList->at(i))){
+            //         data.emplace_back();
+            //         GetAttributeData(model, model.meshes[i].primitives[j], m_attributeList->at(i), data[i]);
+            //         Attribute& attrib = temp_mesh.m_attributes.emplace_back();
+            //         attrib.m_name = m_attributeList->at(i);
+            //     }
+            // }
 
-            CreateGlObjects(temp_mesh, data, indices);
+            GetIndexData(model, model.meshes[i].primitives[j], current_mesh.indices);
+
             }
     }
     return;

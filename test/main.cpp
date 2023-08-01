@@ -18,13 +18,7 @@ int main(){
     camera.m_transform.rot = {0.0f, 0.0f, -90.0f};
     camera.m_transform.pos = {0.0f, 0.0f, 3.0f};
 
-    std::map<std::string, glWrap::Model> meshes;
 
-    window.LoadFile(meshes, "../assets/Cube.gltf");
-
-    for (auto& mesh : meshes){
-        DEV_LOG("Model ", mesh.first);
-    }
 
     glWrap::Texture2D texture("../assets/IdleMan.png", false, GL_NEAREST, GL_RGB);
     // glWrap::Texture2D texture2("../assets/RunningMan.png", false, GL_NEAREST, GL_RGB);
@@ -33,7 +27,21 @@ int main(){
     shader.Use();
     shader.SetTexture("texture1", &texture);
 
-    glWrap::Copy copy;
+    glWrap::Model model;
+    model.m_meshes.push_back(glWrap::Mesh{});
+    {
+        std::map<std::string, glWrap::ModelData> models;
+        window.LoadGLTF(models, "../assets/Cube.gltf");
+        for (auto& mesh : models){
+            DEV_LOG("Model ", mesh.first);
+        }
+
+        glWrap::Mesh& current = model.m_meshes.back();
+        current.SetIndexData(models.at("Cube.0").meshes[0].indices);
+        current.SetAttributeData(models.at("Cube.0").meshes[0].attributes.at("POSITION"), 0);
+        current.SetAttributeData(models.at("Cube.0").meshes[0].attributes.at("NORMAL"), 1);
+        current.SetAttributeData(models.at("Cube.0").meshes[0].attributes.at("TEXCOORD_0"), 2);
+    }
 
     copy.SetModel(&meshes.at("Cube.0"));
 

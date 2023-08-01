@@ -23,16 +23,18 @@ namespace glWrap
     void Terminate();
     */
 
-    class Engine;
-
-    struct MeshData{
-        std::vector<float>  m_value;
-        unsigned int        m_size;
+    struct AttributeData{
+        std::vector<float> data;
+        unsigned int size;
     };
 
-    struct Attribute{
-        std::string m_name;
-        GLuint      m_bufferID;
+    struct MeshData{
+        std::map<std::string, AttributeData> attributes;
+        std::vector<unsigned short> indices;
+    };
+
+    struct ModelData{
+        std::vector<MeshData> meshes;
     };
 
     struct Transform{
@@ -119,30 +121,23 @@ namespace glWrap
     };
 
     class Mesh{
+    private:
+        bool                EBO_generated{ false };
     public:
-        std::vector<Attribute>  m_attributes;
-        unsigned int            m_indexAmount;
+        std::vector<GLuint> m_buffers;
+        unsigned int        m_indexAmount;
         GLuint m_VAO, m_EBO;
 
+        Mesh() = default;
+        void SetAttributeData(AttributeData& attribute, unsigned int layout, unsigned int divisor, GLenum drawtype);
+        void SetAttributeData(AttributeData& attribute, unsigned int layout);
+        void SetIndexData(std::vector<unsigned short>& indices);
         void Draw();
     };
 
     class Model{
     public:
         std::vector<Mesh>                           m_meshes;
-    };
-    
-    class Copy : public WorldObject {
-    private:
-        Model*                   m_mesh;
-        bool                    m_visible{true};
-
-    public:
-        void SetModel(Model* mesh);
-        void SetVisibility(bool visibility);
-
-        Model* GetModel();
-        bool GetVisibility();
     };
 
     class Window{
@@ -173,7 +168,7 @@ namespace glWrap
         void Swap();
         // void Draw(Copy& copy);
         float GetDeltaTime();
-        void LoadFile(std::map<std::string, Model>& container, std::string file);
+        void LoadGLTF(std::map<std::string, ModelData>& container, std::string file);
         ~Window();
 
         bool IsKeyPressed(unsigned int key);
