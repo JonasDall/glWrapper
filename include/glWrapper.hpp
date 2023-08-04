@@ -18,18 +18,13 @@
 
 namespace glWrap
 {
-    /*
-    void Initialize();
-    void Terminate();
-    */
-
     struct AttributeData{
         std::vector<float> data;
-        unsigned int size;
+        unsigned int size{};
     };
 
     struct MeshData{
-        std::map<std::string, AttributeData> attributes;
+        std::vector<AttributeData> attributes;
         std::vector<unsigned short> indices;
     };
 
@@ -121,23 +116,28 @@ namespace glWrap
     };
 
     class Mesh{
-    private:
-        bool                EBO_generated{ false };
     public:
         std::vector<GLuint> m_buffers;
         unsigned int        m_indexAmount;
-        GLuint m_VAO, m_EBO;
+        GLuint m_VAO{}, m_EBO{};
 
-        Mesh() = default;
-        void SetAttributeData(AttributeData& attribute, unsigned int layout, unsigned int divisor, GLenum drawtype);
-        void SetAttributeData(AttributeData& attribute, unsigned int layout);
+        Mesh();
+        // void SetMeshData(MeshData& mesh);
+        void SetAttributeData(std::vector<float>& data, unsigned int size, unsigned int layout, unsigned int divisor, GLenum drawtype);
+        void SetAttributeData(std::vector<float>& data, unsigned int size, unsigned int layout);
         void SetIndexData(std::vector<unsigned short>& indices);
         void Draw();
+        void DrawInstanced(unsigned int count);
     };
 
     class Model{
     public:
-        std::vector<Mesh>                           m_meshes;
+        std::vector<Mesh> m_meshes;
+
+        void SetModelData(ModelData& model);
+        void SetModelAttribute(std::vector<float>& data, unsigned int size, unsigned int layout, unsigned int divisor, GLenum drawtype);
+        void Draw();
+        void DrawInstanced(unsigned int count);
     };
 
     class Window{
