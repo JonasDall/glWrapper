@@ -90,7 +90,10 @@ static void CreateShader(unsigned int &id, GLenum type, std::string code){
 
 void GetAttributeData(tinygltf::Model& model, tinygltf::Primitive& primitive, std::string target, glWrap::MeshData& mesh){
 
-    glWrap::AttributeData& currentAttribute = mesh.attributes[target];
+    // glWrap::AttributeData& currentAttribute = mesh.attributes[target];
+    mesh.attributes.push_back(glWrap::AttributeData{});
+    glWrap::AttributeData& currentAttribute = mesh.attributes.back();
+
     tinygltf::Accessor accessor = model.accessors[primitive.attributes.at(target)];
     tinygltf::BufferView view = model.bufferViews[model.accessors[primitive.attributes.at(target)].bufferView];
     int byteOffset = view.byteOffset;
@@ -105,19 +108,8 @@ void GetAttributeData(tinygltf::Model& model, tinygltf::Primitive& primitive, st
     currentAttribute.data.resize(byteLength / sizeof(float));
     std::memcpy(currentAttribute.data.data(), data.data() + byteOffset, byteLength);
 
-    switch(accessor.type){
-        case 2:
-        currentAttribute.size = 2;
-        break;
+    currentAttribute.size = accessor.type;
 
-        case 3:
-        currentAttribute.size = 3;
-        break;
-
-        case 4:
-        currentAttribute.size = 4;
-        break;
-    }
     return;
 }
 
@@ -345,57 +337,72 @@ void glWrap::Camera::SetPerspective(bool isTrue){ m_perspective = isTrue; }
 
 glWrap::Mesh::Mesh(){
     glGenVertexArrays(1, &m_VAO);
+    DEV_LOG("VAO generated: ", m_VAO);
 }
 
-void glWrap::Mesh::SetAttributeData(AttributeData& attribute, unsigned int layout, unsigned int divisor, GLenum drawType){
+void glWrap::Mesh::SetAttributeData(std::vector<float>& data, unsigned int size, unsigned int layout, unsigned int divisor, GLenum drawtype){
     glBindVertexArray(m_VAO);
 
     if (m_buffers.size() <= layout){
         m_buffers.resize(layout + 1);
         glGenBuffers(1, &m_buffers[layout]);
         glBindBuffer(GL_ARRAY_BUFFER, m_buffers[layout]);
+        DEV_LOG("Increased attributes to ", m_buffers.size());
     }
     else if ( m_buffers[layout] == 0 ) {
         glGenBuffers(1, &m_buffers[layout]);
         glBindBuffer(GL_ARRAY_BUFFER, m_buffers[layout]);
+        DEV_LOG("Generating buffer ", layout);
     }
 
-    glBufferData(GL_ARRAY_BUFFER, attribute.data.size() * sizeof(float), attribute.data.data(), drawType);
-    glVertexAttribPointer(layout, attribute.size, GL_FLOAT, GL_FALSE, attribute.size * sizeof(float), (void*)0);
+    glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), data.data(), drawtype);
+    glVertexAttribPointer(layout, size, GL_FLOAT, GL_FALSE, size * sizeof(float), (void*)0);
     glVertexAttribDivisor(layout, divisor);
     glEnableVertexAttribArray(layout);
+    DEV_LOG("Written buffer ", layout);
 
     glBindVertexArray(0);
 }
 
-void glWrap::Mesh::SetAttributeData(AttributeData& attribute, unsigned int layout){
+void glWrap::Mesh::SetAttributeData(std::vector<float>& data, unsigned int size, unsigned int layout){
     glBindVertexArray(m_VAO);
 
     if (m_buffers.size() <= layout){
         m_buffers.resize(layout + 1);
         glGenBuffers(1, &m_buffers[layout]);
         glBindBuffer(GL_ARRAY_BUFFER, m_buffers[layout]);
+        DEV_LOG("Increased attributes to ", m_buffers.size());
     }
     else if ( m_buffers[layout] == 0 ) {
         glGenBuffers(1, &m_buffers[layout]);
         glBindBuffer(GL_ARRAY_BUFFER, m_buffers[layout]);
+        DEV_LOG("Generating buffer ", layout);
     }
 
-    glBufferData(GL_ARRAY_BUFFER, attribute.data.size() * sizeof(float), attribute.data.data(), GL_STATIC_DRAW);
-    glVertexAttribPointer(layout, attribute.size, GL_FLOAT, GL_FALSE, attribute.size * sizeof(float), (void*)0);
+    glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), data.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(layout, size, GL_FLOAT, GL_FALSE, size * sizeof(float), (void*)0);
     glEnableVertexAttribArray(layout);
+    DEV_LOG("Written buffer ", layout);
 
     glBindVertexArray(0);
 }
 
 void glWrap::Mesh::SetIndexData(std::vector<unsigned short>& indices){
-    if (!EBO_generated){
+    DEV_LOG("Binding VAO", "");
+    glBindVertexArray(m_VAO);
+
+    if (m_EBO == 0){
+        DEV_LOG("EBO not generated", ""); 
         glGenBuffers(1, &m_EBO);
-        EBO_generated = true;
+        DEV_LOG("EBO generated", "");
     }
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
+    DEV_LOG("EBO bound ", m_EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GL_UNSIGNED_SHORT), indices.data(), GL_STATIC_DRAW);
+    DEV_LOG("EBO set ", m_EBO);
+
+    m_indexAmount = indices.size();
 }
 
 void glWrap::Mesh::Draw(){
@@ -407,6 +414,57 @@ void glWrap::Mesh::Draw(){
 
     // DEV_LOG("Drawing elements", "");
     glDrawElements(GL_TRIANGLES, m_indexAmount, GL_UNSIGNED_SHORT, 0);
+}
+
+void glWrap::Mesh::Draw(unsigned int count){
+
+    // DEV_LOG("Binding VAO: ", m_VAO);
+    glBindVertexArray(m_VAO);
+    // DEV_LOG("Binding EBO: ", m_EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
+
+    // DEV_LOG("Drawing elements", "");
+    glDrawElementsInstanced(GL_TRIANGLES, m_indexAmount, GL_UNSIGNED_SHORT, 0, count);
+}
+
+void glWrap::Model::SetModelData(ModelData& model){
+
+    DEV_LOG("Meshes: ", model.meshes.size());
+
+    for (int i{}; i < model.meshes.size(); ++i){
+        DEV_LOG("Mesh: ", i);
+        MeshData& meshData = model.meshes[i];
+        DEV_LOG("Mesh data indexes: ", meshData.indices.size());
+        m_meshes.push_back(Mesh{});
+        DEV_LOG("Mesh created", "");
+        Mesh& mesh = m_meshes.back();
+        DEV_LOG("Mesh selected", "");
+        mesh.SetIndexData(meshData.indices);
+        DEV_LOG("Mesh index set", "");
+
+        DEV_LOG("Attributes: ", meshData.attributes.size());
+        for (int j{}; j < meshData.attributes.size(); ++j){
+            DEV_LOG("Attribute: ", j);
+            AttributeData& attributeData = meshData.attributes[j];
+            mesh.SetAttributeData(attributeData.data, attributeData.size, j);
+        }
+    }
+}
+
+void glWrap::Model::SetModelAttribute(std::vector<float>& data, unsigned int size, unsigned int layout, unsigned int divisor, GLenum drawtype){
+    for (auto& mesh : m_meshes) mesh.SetAttributeData(data, size, layout, divisor, drawtype);
+}
+
+void glWrap::Model::Draw(){
+    for (auto& mesh : m_meshes){
+        mesh.Draw();
+    }
+}
+
+void glWrap::Model::Draw(unsigned int count){
+    for (auto& mesh : m_meshes){
+        mesh.Draw(count);
+    }
 }
 
 // 
@@ -503,19 +561,6 @@ void glWrap::Window::Swap(){
     m_firstFrame = false;
 }
 
-/*
-void glWrap::Window::Draw(Copy& copy){
-
-    if (copy.GetModel() && copy.GetVisibility() && m_ActiveCamera){
-
-        for (int i{}; i < copy.GetModel()->m_meshes.size(); ++i){
-
-            copy.GetModel()->m_meshes[i].Draw();
-        }
-    }
-}
-*/
-
 bool glWrap::Window::IsKeyHeld(unsigned int key) { return glfwGetKey(m_window, key) == GLFW_PRESS; }
 bool glWrap::Window::IsRequestedClose() { return glfwWindowShouldClose(m_window); }
 
@@ -547,7 +592,7 @@ void glWrap::Window::frameCall(GLFWwindow* window, int width, int height){
     m_size = {width, height};
 }
 
-void glWrap::Window::LoadGLTF(std::map<std::string, ModelData>& container, std::string file){
+void glWrap::Window::LoadGLTF(std::map<std::string, ModelData>& modelContainer, std::map<std::string, Skeleton>& skeletonContainer, std::string file){
 
     tinygltf::TinyGLTF loader;
     tinygltf::Model model;
@@ -561,38 +606,82 @@ void glWrap::Window::LoadGLTF(std::map<std::string, ModelData>& container, std::
 
     for(int i{}; i < model.meshes.size(); ++i){
 
-        DEV_LOG("Model: ", model.meshes[i].name);
+        tinygltf::Mesh& current_gltfMesh = model.meshes[i];
+        DEV_LOG("Model: ", current_gltfMesh.name);
 
         int postfix{0};
-        while (container.count(model.meshes[i].name + "." + std::to_string(postfix))){
+        while (modelContainer.count(model.meshes[i].name + "." + std::to_string(postfix))){
             ++postfix;
         }
 
-        container.emplace(model.meshes[i].name + "." + std::to_string(postfix), Model{});
-        ModelData& current_model = container[model.meshes[i].name + "." + std::to_string(postfix)];
+        modelContainer.emplace(model.meshes[i].name + "." + std::to_string(postfix), ModelData{});
+        ModelData& current_model = modelContainer[model.meshes[i].name + "." + std::to_string(postfix)];
 
-        for (int j{}; j < model.meshes[i].primitives.size(); ++j){
+        for (int j{}; j < current_gltfMesh.primitives.size(); ++j){
 
+            tinygltf::Primitive& current_gltfPrimitive = current_gltfMesh.primitives[j];
             current_model.meshes.push_back(MeshData());
             MeshData& current_mesh = current_model.meshes.back();
 
-            for (auto& attribute : model.meshes[i].primitives[j].attributes){
-                GetAttributeData(model, model.meshes[i].primitives[j], attribute.first, current_mesh);
+            GetAttributeData(model, current_gltfPrimitive, "POSITION", current_mesh);
+
+            unsigned int vertices = current_mesh.attributes[0].data.size() / 3;
+            DEV_LOG("Vertices: ", vertices);
+
+            if (current_gltfPrimitive.attributes.count("NORMAL")){
+                GetAttributeData(model, current_gltfPrimitive, "NORMAL", current_mesh);
+            }
+            else {
+                current_mesh.attributes.push_back(AttributeData{});
+                current_mesh.attributes.back().data.resize( vertices * 3 );
+                current_mesh.attributes.back().size = 3;
             }
 
-            // for (int i{}; m_attributeList->size(); ++i){
-            //     if (model.meshes[i].primitives[j].attributes.count(m_attributeList->at(i))){
-            //         data.emplace_back();
-            //         GetAttributeData(model, model.meshes[i].primitives[j], m_attributeList->at(i), data[i]);
-            //         Attribute& attrib = temp_mesh.m_attributes.emplace_back();
-            //         attrib.m_name = m_attributeList->at(i);
-            //     }
-            // }
+            if (current_gltfPrimitive.attributes.count("TEXCOORD_0")){
+                GetAttributeData(model, current_gltfPrimitive, "TEXCOORD_0", current_mesh);
+            }
+            else {
+                current_mesh.attributes.push_back(AttributeData{});
+                current_mesh.attributes.back().data.resize( vertices * 2 );
+                current_mesh.attributes.back().size = 2;
+            }
 
-            GetIndexData(model, model.meshes[i].primitives[j], current_mesh.indices);
+            if (current_gltfPrimitive.attributes.count("COLOR_0")){
+                GetAttributeData(model, current_gltfPrimitive, "COLOR_0", current_mesh);
+            }
+            else {
+                current_mesh.attributes.push_back(AttributeData{});
+                current_mesh.attributes.back().data.resize( vertices * 3 );
+                current_mesh.attributes.back().size = 3;
+            }
+
+            if (current_gltfPrimitive.attributes.count("JOINTS_0")){
+                GetAttributeData(model, current_gltfPrimitive, "JOINTS_0", current_mesh);
+
+                if (current_gltfPrimitive.attributes.count("WEIGHTS_0")){
+                    GetAttributeData(model, current_gltfPrimitive, "WEIGHTS_0", current_mesh);
+                }
+            }
+            GetIndexData(model, current_gltfPrimitive, current_mesh.indices);
 
             }
     }
+
+    for (int i{}; i < model.skins.size(); ++i){
+
+        tinygltf::Skin& currentSkin = model.skins[i];
+
+        int postfix{0};
+        while (skeletonContainer.count(model.skins[i].name + "." + std::to_string(postfix))){
+            ++postfix;
+        }
+
+        for (int j{}; j < currentSkin.joints.size(); ++j){
+            
+        }
+
+    }
+
     return;
 }
 
