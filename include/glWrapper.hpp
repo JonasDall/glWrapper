@@ -21,11 +21,9 @@ namespace glWrap
     struct AttributeData{
         std::vector<float> data;
         unsigned int size{};
-        unsigned int size{};
     };
 
     struct MeshData{
-        std::vector<AttributeData> attributes;
         std::vector<AttributeData> attributes;
         std::vector<unsigned short> indices;
     };
@@ -122,16 +120,12 @@ namespace glWrap
         std::vector<GLuint> m_buffers;
         unsigned int        m_indexAmount;
         GLuint m_VAO{}, m_EBO{};
-        GLuint m_VAO{}, m_EBO{};
 
         Mesh();
         // void SetMeshData(MeshData& mesh);
         void SetAttributeData(std::vector<float>& data, unsigned int size, unsigned int layout, unsigned int divisor, GLenum drawtype);
         void SetAttributeData(std::vector<float>& data, unsigned int size, unsigned int layout);
-        Mesh();
-        // void SetMeshData(MeshData& mesh);
-        void SetAttributeData(std::vector<float>& data, unsigned int size, unsigned int layout, unsigned int divisor, GLenum drawtype);
-        void SetAttributeData(std::vector<float>& data, unsigned int size, unsigned int layout);
+
         void SetIndexData(std::vector<unsigned short>& indices);
         void Draw();
         void Draw(unsigned int count);

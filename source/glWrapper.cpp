@@ -94,10 +94,6 @@ void GetAttributeData(tinygltf::Model& model, tinygltf::Primitive& primitive, st
     mesh.attributes.push_back(glWrap::AttributeData{});
     glWrap::AttributeData& currentAttribute = mesh.attributes.back();
 
-    // glWrap::AttributeData& currentAttribute = mesh.attributes[target];
-    mesh.attributes.push_back(glWrap::AttributeData{});
-    glWrap::AttributeData& currentAttribute = mesh.attributes.back();
-
     tinygltf::Accessor accessor = model.accessors[primitive.attributes.at(target)];
     tinygltf::BufferView view = model.bufferViews[model.accessors[primitive.attributes.at(target)].bufferView];
     int byteOffset = view.byteOffset;
