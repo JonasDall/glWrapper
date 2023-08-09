@@ -94,6 +94,10 @@ void GetAttributeData(tinygltf::Model& model, tinygltf::Primitive& primitive, st
     mesh.attributes.push_back(glWrap::AttributeData{});
     glWrap::AttributeData& currentAttribute = mesh.attributes.back();
 
+    // glWrap::AttributeData& currentAttribute = mesh.attributes[target];
+    mesh.attributes.push_back(glWrap::AttributeData{});
+    glWrap::AttributeData& currentAttribute = mesh.attributes.back();
+
     tinygltf::Accessor accessor = model.accessors[primitive.attributes.at(target)];
     tinygltf::BufferView view = model.bufferViews[model.accessors[primitive.attributes.at(target)].bufferView];
     int byteOffset = view.byteOffset;
@@ -108,6 +112,7 @@ void GetAttributeData(tinygltf::Model& model, tinygltf::Primitive& primitive, st
     currentAttribute.data.resize(byteLength / sizeof(float));
     std::memcpy(currentAttribute.data.data(), data.data() + byteOffset, byteLength);
 
+    currentAttribute.size = accessor.type;
     currentAttribute.size = accessor.type;
 
     return;
@@ -666,22 +671,6 @@ void glWrap::Window::LoadGLTF(std::map<std::string, ModelData>& modelContainer, 
 
             }
     }
-
-    for (int i{}; i < model.skins.size(); ++i){
-
-        tinygltf::Skin& currentSkin = model.skins[i];
-
-        int postfix{0};
-        while (skeletonContainer.count(model.skins[i].name + "." + std::to_string(postfix))){
-            ++postfix;
-        }
-
-        for (int j{}; j < currentSkin.joints.size(); ++j){
-            
-        }
-
-    }
-
     return;
 }
 

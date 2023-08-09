@@ -11,6 +11,8 @@
 int main(){
 
     glWrap::Window window("Window", {1920, 1080});
+
+    glWrap::Window window("Window", {1920, 1080});
     window.SetInputMode(GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     window.m_color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
 
@@ -43,6 +45,20 @@ int main(){
             positionsFloat.push_back(positionsVector[i].y);
         }
 
+        std::vector<glm::vec2> positionsVector;
+        std::vector<float> positionsFloat;
+
+        for (int i{}; i < 100; ++i){
+            for (int j{}; j < 100; ++j){
+                positionsVector.push_back({ i * 3, j * 3});
+            }
+        }
+
+        for (int i{}; i < positionsVector.size(); ++i){
+            positionsFloat.push_back(positionsVector[i].x);
+            positionsFloat.push_back(positionsVector[i].y);
+        }
+
         std::map<std::string, glWrap::ModelData> models;
         window.LoadGLTF(models, skeletons, "../assets/Cube.gltf");
 
@@ -55,6 +71,8 @@ int main(){
         // model.SetModelAttribute(positionsFloat, 2, 4, 1, GL_STATIC_DRAW);
     }
 
+    glWrap::WorldObject object{};
+    object.AddScale({5, 5, 5});
     glWrap::WorldObject object{};
     object.AddScale({5, 5, 5});
 
@@ -74,6 +92,7 @@ int main(){
         camera.AddRotation({0.0f, 0.0f, window.GetDeltaMousePos().x * MouseSensitivity});
         camera.AddRotation({0.0f, window.GetDeltaMousePos().y * MouseSensitivity, 0.0f});
 
+        shader.SetMatrix4("model", object.GetTransformMatrix());
         shader.SetMatrix4("model", object.GetTransformMatrix());
         shader.SetMatrix4("view", camera.GetView());
         shader.SetMatrix4("projection", camera.GetProjection(window.GetSize()));
