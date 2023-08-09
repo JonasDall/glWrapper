@@ -611,9 +611,7 @@ void glWrap::Window::LoadGLTF(std::map<std::string, ModelData>& modelContainer, 
         DEV_LOG("Model: ", current_gltfMesh.name);
 
         int postfix{0};
-        while (modelContainer.count(model.meshes[i].name + "." + std::to_string(postfix))){
-            ++postfix;
-        }
+        while (modelContainer.count(model.meshes[i].name + "." + std::to_string(postfix))) ++postfix; 
 
         modelContainer.emplace(model.meshes[i].name + "." + std::to_string(postfix), ModelData{});
         ModelData& current_model = modelContainer[model.meshes[i].name + "." + std::to_string(postfix)];
@@ -667,6 +665,23 @@ void glWrap::Window::LoadGLTF(std::map<std::string, ModelData>& modelContainer, 
 
             }
     }
+
+    for (int i{}; i < model.skins.size(); ++i){
+
+        tinygltf::Skin& current_gltfSkin = model.skins[i];
+        DEV_LOG("Skin: ", current_gltfSkin.name);
+
+        int postfix{0};
+        while (modelContainer.count(model.skins[i].name + "." + std::to_string(postfix))) ++postfix;
+
+        skeletonContainer.emplace(model.skins[i].name + "." + std::to_string(postfix), Skeleton{});
+        Skeleton& current_skeleton = skeletonContainer[model.skins[i].name + "." + std::to_string(postfix)];
+
+        for (int j{}; j < current_gltfSkin.joints.size(); ++j){
+            
+        }
+    }
+
     return;
 }
 
