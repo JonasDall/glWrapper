@@ -17,6 +17,6 @@ uniform mat4 projection;
 uniform mat4 jointMat[50];
 
 void main(){
-    gl_Position = projection * view * model * vec4(vPosition.x + vOffset.x, vPosition.y + vOffset.y, vPosition.z , 1);
+    gl_Position = projection * view * model * vec4(vPosition.x, vPosition.y, vPosition.z , 1);
     texCoord = vTexcoord;
 }

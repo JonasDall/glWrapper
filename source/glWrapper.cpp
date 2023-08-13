@@ -1,5 +1,10 @@
 #include "glWrapper.hpp"
 
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#include "tinygltf/tinygltf.hpp"
+#include "tinygltf/stb_image.h"
+
 #define GW_DEBUG
 
 #ifdef GW_DEBUG
@@ -292,9 +297,9 @@ void glWrap::Shader::SetTexture(const std::string name, Texture2D* texture){ m_t
 
 glm::vec3 glWrap::WorldObject::GetForwardVector(){
     return glm::normalize(glm::vec3{
-        (cos(glm::radians(m_transform.rot.z)) * cos(glm::radians(m_transform.rot.y))),
-        sin(glm::radians(m_transform.rot.y)),
-        (sin(glm::radians(m_transform.rot.z)) * cos(glm::radians(m_transform.rot.y)))});
+        (cos(glm::radians(m_rot.z)) * cos(glm::radians(m_rot.y))),
+        sin(glm::radians(m_rot.y)),
+        (sin(glm::radians(m_rot.z)) * cos(glm::radians(m_rot.y)))});
 }
 
 glm::vec3 glWrap::WorldObject::GetRightVector(){ return glm::normalize(glm::cross(GetForwardVector(), glm::vec3(0.0f, 1.0f, 0.0f))); }
@@ -305,25 +310,25 @@ glm::mat4 glWrap::WorldObject::GetTransformMatrix(){
 
     glm::mat4 model = glm::mat4(1.0f);
 
-    model = glm::translate(model, m_transform.pos);
-    model = glm::scale(model, m_transform.scl);
-    model = glm::rotate(model, glm::radians(m_transform.rot.x), glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(m_transform.rot.y), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(m_transform.rot.z), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::translate(model, m_pos);
+    model = glm::scale(model, m_scl);
+    model = glm::rotate(model, glm::radians(m_rot.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(m_rot.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(m_rot.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
     return model;
 }
 
-void glWrap::WorldObject::AddPosition(glm::vec3 position){ m_transform.pos += position; }
-void glWrap::WorldObject::AddRotation(glm::vec3 rotation){ m_transform.rot += rotation; }
-void glWrap::WorldObject::AddScale(glm::vec3 scale){ m_transform.scl += scale; }
+void glWrap::WorldObject::AddPosition(glm::vec3 position){ m_pos += position; }
+void glWrap::WorldObject::AddRotation(glm::vec3 rotation){ m_rot += rotation; }
+void glWrap::WorldObject::AddScale(glm::vec3 scale){ m_scl += scale; }
 
 // 
 // *Camera
 // 
 
 float glWrap::Camera::GetFOV(){ return m_FOV; }
-glm::mat4 glWrap::Camera::GetView(){ return m_target ? glm::lookAt(m_transform.pos, *m_target, GetUpwardVector()) : glm::lookAt(m_transform.pos, m_transform.pos + GetForwardVector(), GetUpwardVector()); }
+glm::mat4 glWrap::Camera::GetView(){ return m_target ? glm::lookAt(m_pos, *m_target, GetUpwardVector()) : glm::lookAt(m_pos, m_pos + GetForwardVector(), GetUpwardVector()); }
 glm::mat4 glWrap::Camera::GetProjection(glm::vec2 aspect){ return m_perspective ? glm::perspective(glm::radians(m_FOV), (aspect.x / aspect.y), m_clip.x, m_clip.y ) : glm::ortho(0.0f, aspect.x, 0.0f, aspect.y, m_clip.x, m_clip.y); }
 bool glWrap::Camera::IsPerspective(){ return m_perspective; }
 
@@ -678,7 +683,7 @@ void glWrap::Window::LoadGLTF(std::map<std::string, ModelData>& modelContainer, 
         Skeleton& current_skeleton = skeletonContainer[model.skins[i].name + "." + std::to_string(postfix)];
 
         for (int j{}; j < current_gltfSkin.joints.size(); ++j){
-            
+
         }
     }
 

@@ -16,8 +16,8 @@ int main(){
 
     glWrap::Camera camera;
     camera.SetFOV(90.0f);
-    camera.m_transform.rot = {0.0f, 0.0f, -90.0f};
-    camera.m_transform.pos = {0.0f, 0.0f, 3.0f};
+    camera.m_rot = {0.0f, 0.0f, -90.0f};
+    camera.m_pos = {0.0f, 0.0f, 3.0f};
 
     glWrap::Texture2D texture("../assets/IdleMan.png", false, GL_NEAREST, GL_RGB);
 
@@ -29,20 +29,6 @@ int main(){
     std::map<std::string, glWrap::Skeleton> skeletons;
 
     {
-        std::vector<glm::vec2> positionsVector;
-        std::vector<float> positionsFloat;
-
-        for (int i{}; i < 100; ++i){
-            for (int j{}; j < 100; ++j){
-                positionsVector.push_back({ i * 3, j * 3});
-            }
-        }
-
-        for (int i{}; i < positionsVector.size(); ++i){
-            positionsFloat.push_back(positionsVector[i].x);
-            positionsFloat.push_back(positionsVector[i].y);
-        }
-
         std::map<std::string, glWrap::ModelData> models;
         window.LoadGLTF(models, skeletons, "../assets/Cube.gltf");
 
@@ -51,8 +37,6 @@ int main(){
         }
 
         model.SetModelData(models.at("Arm.0"));
-        // DEV_LOG("Creating instance buffer", "");
-        // model.SetModelAttribute(positionsFloat, 2, 4, 1, GL_STATIC_DRAW);
     }
 
     glWrap::WorldObject object{};

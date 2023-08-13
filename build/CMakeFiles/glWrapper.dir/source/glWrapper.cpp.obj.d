@@ -1,15 +1,13 @@
 CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj: \
  C:\Users\jonas\Documents\Koding\Workspaces\glWrapper\source\glWrapper.cpp \
  C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/include/glWrapper.hpp \
- C:/msys64/mingw64/include/c++/11.3.0/string \
+ C:/msys64/mingw64/include/c++/11.3.0/map \
+ C:/msys64/mingw64/include/c++/11.3.0/bits/stl_tree.h \
+ C:/msys64/mingw64/include/c++/11.3.0/bits/stl_algobase.h \
  C:/msys64/mingw64/include/c++/11.3.0/x86_64-w64-mingw32/bits/c++config.h \
  C:/msys64/mingw64/include/c++/11.3.0/x86_64-w64-mingw32/bits/os_defines.h \
  C:/msys64/mingw64/include/c++/11.3.0/x86_64-w64-mingw32/bits/cpu_defines.h \
  C:/msys64/mingw64/include/c++/11.3.0/pstl/pstl_config.h \
- C:/msys64/mingw64/include/c++/11.3.0/bits/stringfwd.h \
- C:/msys64/mingw64/include/c++/11.3.0/bits/memoryfwd.h \
- C:/msys64/mingw64/include/c++/11.3.0/bits/char_traits.h \
- C:/msys64/mingw64/include/c++/11.3.0/bits/stl_algobase.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/functexcept.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/exception_defines.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/cpp_type_traits.h \
@@ -26,6 +24,33 @@ CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj: \
  C:/msys64/mingw64/include/c++/11.3.0/bits/ptr_traits.h \
  C:/msys64/mingw64/include/c++/11.3.0/debug/debug.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/predefined_ops.h \
+ C:/msys64/mingw64/include/c++/11.3.0/bits/allocator.h \
+ C:/msys64/mingw64/include/c++/11.3.0/x86_64-w64-mingw32/bits/c++allocator.h \
+ C:/msys64/mingw64/include/c++/11.3.0/ext/new_allocator.h \
+ C:/msys64/mingw64/include/c++/11.3.0/new \
+ C:/msys64/mingw64/include/c++/11.3.0/bits/exception.h \
+ C:/msys64/mingw64/include/c++/11.3.0/bits/memoryfwd.h \
+ C:/msys64/mingw64/include/c++/11.3.0/bits/stl_function.h \
+ C:/msys64/mingw64/include/c++/11.3.0/backward/binders.h \
+ C:/msys64/mingw64/include/c++/11.3.0/ext/alloc_traits.h \
+ C:/msys64/mingw64/include/c++/11.3.0/bits/alloc_traits.h \
+ C:/msys64/mingw64/include/c++/11.3.0/bits/stl_construct.h \
+ C:/msys64/mingw64/include/c++/11.3.0/ext/aligned_buffer.h \
+ C:/msys64/mingw64/include/c++/11.3.0/bits/node_handle.h \
+ C:/msys64/mingw64/include/c++/11.3.0/bits/stl_map.h \
+ C:/msys64/mingw64/include/c++/11.3.0/initializer_list \
+ C:/msys64/mingw64/include/c++/11.3.0/tuple \
+ C:/msys64/mingw64/include/c++/11.3.0/utility \
+ C:/msys64/mingw64/include/c++/11.3.0/bits/stl_relops.h \
+ C:/msys64/mingw64/include/c++/11.3.0/array \
+ C:/msys64/mingw64/include/c++/11.3.0/bits/range_access.h \
+ C:/msys64/mingw64/include/c++/11.3.0/bits/uses_allocator.h \
+ C:/msys64/mingw64/include/c++/11.3.0/bits/invoke.h \
+ C:/msys64/mingw64/include/c++/11.3.0/bits/stl_multimap.h \
+ C:/msys64/mingw64/include/c++/11.3.0/bits/erase_if.h \
+ C:/msys64/mingw64/include/c++/11.3.0/string \
+ C:/msys64/mingw64/include/c++/11.3.0/bits/stringfwd.h \
+ C:/msys64/mingw64/include/c++/11.3.0/bits/char_traits.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/postypes.h \
  C:/msys64/mingw64/include/c++/11.3.0/cwchar \
  C:/msys64/mingw64/include/wchar.h C:/msys64/mingw64/include/corecrt.h \
@@ -45,11 +70,6 @@ CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj: \
  C:/msys64/mingw64/include/stdint.h C:/msys64/mingw64/include/crtdefs.h \
  C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/11.3.0/include/stddef.h \
  C:/msys64/mingw64/include/stddef.h \
- C:/msys64/mingw64/include/c++/11.3.0/bits/allocator.h \
- C:/msys64/mingw64/include/c++/11.3.0/x86_64-w64-mingw32/bits/c++allocator.h \
- C:/msys64/mingw64/include/c++/11.3.0/ext/new_allocator.h \
- C:/msys64/mingw64/include/c++/11.3.0/new \
- C:/msys64/mingw64/include/c++/11.3.0/bits/exception.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/localefwd.h \
  C:/msys64/mingw64/include/c++/11.3.0/x86_64-w64-mingw32/bits/c++locale.h \
  C:/msys64/mingw64/include/c++/11.3.0/clocale \
@@ -60,10 +80,6 @@ CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj: \
  C:/msys64/mingw64/include/ctype.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/ostream_insert.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/cxxabi_forced.h \
- C:/msys64/mingw64/include/c++/11.3.0/bits/stl_function.h \
- C:/msys64/mingw64/include/c++/11.3.0/backward/binders.h \
- C:/msys64/mingw64/include/c++/11.3.0/bits/range_access.h \
- C:/msys64/mingw64/include/c++/11.3.0/initializer_list \
  C:/msys64/mingw64/include/c++/11.3.0/bits/basic_string.h \
  C:/msys64/mingw64/include/c++/11.3.0/ext/atomicity.h \
  C:/msys64/mingw64/include/c++/11.3.0/x86_64-w64-mingw32/bits/gthr.h \
@@ -81,9 +97,6 @@ CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj: \
  C:/msys64/mingw64/include/pthread_compat.h \
  C:/msys64/mingw64/include/pthread_unistd.h \
  C:/msys64/mingw64/include/c++/11.3.0/x86_64-w64-mingw32/bits/atomic_word.h \
- C:/msys64/mingw64/include/c++/11.3.0/ext/alloc_traits.h \
- C:/msys64/mingw64/include/c++/11.3.0/bits/alloc_traits.h \
- C:/msys64/mingw64/include/c++/11.3.0/bits/stl_construct.h \
  C:/msys64/mingw64/include/c++/11.3.0/string_view \
  C:/msys64/mingw64/include/c++/11.3.0/bits/functional_hash.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/hash_bytes.h \
@@ -133,9 +146,6 @@ CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj: \
  C:/msys64/mingw64/include/c++/11.3.0/x86_64-w64-mingw32/bits/c++io.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/fstream.tcc \
  C:/msys64/mingw64/include/c++/11.3.0/iostream \
- C:/msys64/mingw64/include/c++/11.3.0/array \
- C:/msys64/mingw64/include/c++/11.3.0/utility \
- C:/msys64/mingw64/include/c++/11.3.0/bits/stl_relops.h \
  C:/msys64/mingw64/include/c++/11.3.0/vector \
  C:/msys64/mingw64/include/c++/11.3.0/bits/stl_uninitialized.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/stl_vector.h \
@@ -146,15 +156,11 @@ CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj: \
  C:/msys64/mingw64/include/c++/11.3.0/bits/stl_raw_storage_iter.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/align.h \
  C:/msys64/mingw64/include/c++/11.3.0/bit \
- C:/msys64/mingw64/include/c++/11.3.0/bits/uses_allocator.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/unique_ptr.h \
- C:/msys64/mingw64/include/c++/11.3.0/tuple \
- C:/msys64/mingw64/include/c++/11.3.0/bits/invoke.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/shared_ptr.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/shared_ptr_base.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/allocated_ptr.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/refwrap.h \
- C:/msys64/mingw64/include/c++/11.3.0/ext/aligned_buffer.h \
  C:/msys64/mingw64/include/c++/11.3.0/ext/concurrence.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/shared_ptr_atomic.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/atomic_base.h \
@@ -174,9 +180,7 @@ CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj: \
  C:/msys64/mingw64/include/c++/11.3.0/bits/hashtable.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/hashtable_policy.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/enable_special_members.h \
- C:/msys64/mingw64/include/c++/11.3.0/bits/node_handle.h \
  C:/msys64/mingw64/include/c++/11.3.0/bits/unordered_map.h \
- C:/msys64/mingw64/include/c++/11.3.0/bits/erase_if.h \
  C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/gl/glad.h \
  C:/msys64/mingw64/include/KHR/khrplatform.h \
  C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/gl/glfw3.h \
@@ -391,8 +395,4 @@ CMakeFiles/glWrapper.dir/source/glWrapper.cpp.obj: \
  C:/msys64/mingw64/include/sec_api/string_s.h \
  C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/glm/gtc/type_ptr.inl \
  C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/tinygltf/tinygltf.hpp \
- C:/msys64/mingw64/include/c++/11.3.0/map \
- C:/msys64/mingw64/include/c++/11.3.0/bits/stl_tree.h \
- C:/msys64/mingw64/include/c++/11.3.0/bits/stl_map.h \
- C:/msys64/mingw64/include/c++/11.3.0/bits/stl_multimap.h \
  C:/Users/jonas/Documents/Koding/Workspaces/glWrapper/libs/tinygltf/stb_image.h

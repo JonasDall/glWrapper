@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -8,16 +9,19 @@
 #include <memory>
 #include <algorithm>
 
-#include "gl/glad.h"
-#include "gl/glfw3.h"
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
-#include "tinygltf/tinygltf.hpp"
-#include "tinygltf/stb_image.h"
+#include "glad.h"
+#include "glfw3.h"
+#include "glm.hpp"
+// #include "glm/gtc/matrix_transform.hpp"
+// #include "glm/gtc/type_ptr.hpp"
+// #include "tinygltf/tinygltf.hpp"
+// #include "tinygltf/stb_image.h"
+
+struct GLFWwindow;
 
 namespace glWrap
 {
+
     struct AttributeData{
         std::vector<float> data;
         unsigned int size{};
@@ -30,12 +34,6 @@ namespace glWrap
 
     struct ModelData{
         std::vector<MeshData> meshes;
-    };
-
-    struct Transform{
-        glm::vec3 pos{};
-        glm::vec3 rot{};
-        glm::vec3 scl{};
     };
 
     class Texture2D
@@ -84,7 +82,9 @@ namespace glWrap
 
     class WorldObject{
     public:
-        Transform   m_transform{ {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f} };
+        glm::vec3 m_pos{};
+        glm::vec3 m_rot{};
+        glm::vec3 m_scl{1.f, 1.f, 1.f};
 
         glm::vec3 GetForwardVector();
         glm::vec3 GetUpwardVector();
@@ -141,17 +141,22 @@ namespace glWrap
         void Draw(unsigned int count);
     };
 
+    class Animation{
+
+    };
+
     class Bone{
     public:
-        std::string m_name;    
+        std::string m_name;
+        glm::vec3 m_localPos;
+        glm::vec4 m_localRot;
+        glm::vec3 m_localScl;
+        std::vector<unsigned int> m_parent;
+        std::vector<unsigned int> m_children;
     };
 
     class Skeleton{
-
-    };
-
-    class Animation{
-
+        std::vector<Bone> m_bones;
     };
 
     class Window{
