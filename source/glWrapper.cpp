@@ -117,44 +117,6 @@ void GetAttributeData(tinygltf::Model& model, tinygltf::Primitive& primitive, st
     GetBufferData(model.accessors.at(primitive.attributes.at(target)), model, mesh.attributes.back().data);
 }
 
-/*
-void GetAttributeData(tinygltf::Model& model, tinygltf::Primitive& primitive, std::string target, glWrap::MeshData& mesh){
-
-    mesh.attributes.push_back(glWrap::AttributeData{});
-    glWrap::AttributeData& currentAttribute = mesh.attributes.back();
-
-    tinygltf::Accessor accessor = model.accessors[primitive.attributes.at(target)];
-    tinygltf::BufferView view = model.bufferViews[model.accessors[primitive.attributes.at(target)].bufferView];
-
-    int byteOffset = view.byteOffset;
-    int byteLength = view.byteLength;
-
-    tinygltf::Buffer buffer = model.buffers[view.buffer];
-
-    std::vector<unsigned char> data;
-    data.resize(buffer.data.size());
-    data = buffer.data;
-
-    currentAttribute.data.resize(byteLength / sizeof(float));
-    std::memcpy(currentAttribute.data.data(), data.data() + byteOffset, byteLength);
-
-    currentAttribute.size = accessor.type;
-
-    return;
-}
-*/
-
-/*
-void GetSkinMatrix(tinygltf::Model& model, tinygltf::Skin& skin, int index, glWrap::Joint& joint){
-
-    glm::mat4 mat{1.f};
-
-    model.accessors.at(skin.inverseBindMatrices).bufferView
-    int byteOffset = view.byteOffset;
-    int byteLength = view.byteLength;
-}
-*/
-
 void GetIndexData(tinygltf::Model& model, tinygltf::Primitive& primitive, std::vector<unsigned short>& container){
 
     tinygltf::BufferView view = model.bufferViews[model.accessors[primitive.indices].bufferView];
@@ -721,7 +683,13 @@ void glWrap::Window::LoadGLTF(std::map<std::string, ModelData>& modelContainer, 
         skinContainer[current_gltfSkin.name] = Skin{};
         Skin& current_skin = skinContainer[current_gltfSkin.name];
 
-        // for (int j{}; j < current_gltfSkin.joints.size(); ++j){
+        std::vector<unsigned char> tempMatrixData;
+        GetBufferData(model.accessors[current_gltfSkin.inverseBindMatrices], model, tempMatrixData);
+
+        std::vector<glm::mat4> matrixData;
+        matrixData.resize(tempMatrixData.size() / sizeof(glm::mat4));
+        std::memcpy(matrixData.data(), tempMatrixData.data(), tempMatrixData.size());
+
         for (auto& tinygltf_joint : current_gltfSkin.joints){
 
             current_skin.m_joints.push_back(Joint{});
@@ -729,17 +697,13 @@ void glWrap::Window::LoadGLTF(std::map<std::string, ModelData>& modelContainer, 
             tinygltf::Node& current_gltfjoint = model.nodes.at(tinygltf_joint);
 
             current_joint.m_name = current_gltfjoint.name;
-            
-            // current_joint.m_offset = model.accessors.at(current_gltfSkin.inverseBindMatrices).
-
-            // GetSkinMatrix(model, current_gltfSkin, tinygltf_joint, current_joint);
+            current_joint.m_offset = matrixData[tinygltf_joint];
 
             for (auto& child : current_gltfjoint.children){
                 current_joint.m_children.push_back(child);
             }
         }
     }
-
     return;
 }
 
