@@ -26,11 +26,11 @@ int main(){
     shader.SetTexture("texture1", &texture);
 
     glWrap::Model model;
-    std::map<std::string, glWrap::Skeleton> skeletons;
+    std::map<std::string, glWrap::Skin> skins;
 
     {
         std::map<std::string, glWrap::ModelData> models;
-        window.LoadGLTF(models, skeletons, "../assets/Cube.gltf");
+        window.LoadGLTF(models, skins, "../assets/Cube.gltf");
 
         for (auto& mesh : models){
             DEV_LOG("Model ", mesh.first);
@@ -65,8 +65,7 @@ int main(){
 
         shader.Update();
 
-        // model.m_meshes[0].Draw();
-        model.Draw(10000);
+        model.Draw();
 
         window.Swap();
     }

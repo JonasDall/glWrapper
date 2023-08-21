@@ -93,14 +93,39 @@ static void CreateShader(unsigned int &id, GLenum type, std::string code){
     return;
 }
 
+void GetBufferData(tinygltf::Accessor& accessor, tinygltf::Model& model, std::vector<unsigned char>& vector){
+
+    tinygltf::BufferView view = model.bufferViews[accessor.bufferView];
+    int byteOffset = view.byteOffset;
+    int byteLength = view.byteLength;
+    vector.resize(byteLength);
+
+    tinygltf::Buffer buffer = model.buffers[view.buffer];
+    std::memcpy(vector.data(), buffer.data.data() + byteOffset, byteLength);
+}
+
 void GetAttributeData(tinygltf::Model& model, tinygltf::Primitive& primitive, std::string target, glWrap::MeshData& mesh){
 
-    // glWrap::AttributeData& currentAttribute = mesh.attributes[target];
+    mesh.attributes.push_back(glWrap::AttributeData{});
+
+    mesh.attributes.back().size = model.accessors.at(primitive.attributes.at(target)).type;
+    DEV_LOG("Type: ", model.accessors.at(primitive.attributes.at(target)).type);
+
+    mesh.attributes.back().type = model.accessors.at(primitive.attributes.at(target)).componentType;
+    DEV_LOG("ComponentType: ", model.accessors.at(primitive.attributes.at(target)).componentType);
+
+    GetBufferData(model.accessors.at(primitive.attributes.at(target)), model, mesh.attributes.back().data);
+}
+
+/*
+void GetAttributeData(tinygltf::Model& model, tinygltf::Primitive& primitive, std::string target, glWrap::MeshData& mesh){
+
     mesh.attributes.push_back(glWrap::AttributeData{});
     glWrap::AttributeData& currentAttribute = mesh.attributes.back();
 
     tinygltf::Accessor accessor = model.accessors[primitive.attributes.at(target)];
     tinygltf::BufferView view = model.bufferViews[model.accessors[primitive.attributes.at(target)].bufferView];
+
     int byteOffset = view.byteOffset;
     int byteLength = view.byteLength;
 
@@ -114,10 +139,21 @@ void GetAttributeData(tinygltf::Model& model, tinygltf::Primitive& primitive, st
     std::memcpy(currentAttribute.data.data(), data.data() + byteOffset, byteLength);
 
     currentAttribute.size = accessor.type;
-    currentAttribute.size = accessor.type;
 
     return;
 }
+*/
+
+/*
+void GetSkinMatrix(tinygltf::Model& model, tinygltf::Skin& skin, int index, glWrap::Joint& joint){
+
+    glm::mat4 mat{1.f};
+
+    model.accessors.at(skin.inverseBindMatrices).bufferView
+    int byteOffset = view.byteOffset;
+    int byteLength = view.byteLength;
+}
+*/
 
 void GetIndexData(tinygltf::Model& model, tinygltf::Primitive& primitive, std::vector<unsigned short>& container){
 
@@ -346,23 +382,23 @@ glWrap::Mesh::Mesh(){
     DEV_LOG("VAO generated: ", m_VAO);
 }
 
-void glWrap::Mesh::SetAttributeData(std::vector<float>& data, unsigned int size, unsigned int layout, unsigned int divisor, GLenum drawtype){
+void glWrap::Mesh::SetAttributeData(std::vector<unsigned char>& data, unsigned int size, unsigned int type, unsigned int layout, unsigned int divisor, GLenum drawtype){
     glBindVertexArray(m_VAO);
 
     if (m_buffers.size() <= layout){
         m_buffers.resize(layout + 1);
         glGenBuffers(1, &m_buffers[layout]);
-        glBindBuffer(GL_ARRAY_BUFFER, m_buffers[layout]);
         DEV_LOG("Increased attributes to ", m_buffers.size());
     }
     else if ( m_buffers[layout] == 0 ) {
         glGenBuffers(1, &m_buffers[layout]);
-        glBindBuffer(GL_ARRAY_BUFFER, m_buffers[layout]);
         DEV_LOG("Generating buffer ", layout);
     }
 
-    glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), data.data(), drawtype);
-    glVertexAttribPointer(layout, size, GL_FLOAT, GL_FALSE, size * sizeof(float), (void*)0);
+    glBindBuffer(GL_ARRAY_BUFFER, m_buffers[layout]);
+
+    glBufferData(GL_ARRAY_BUFFER, data.size(), data.data(), drawtype);
+    glVertexAttribPointer(layout, size, type, GL_FALSE, size * sizeof(float), (void*)0);
     glVertexAttribDivisor(layout, divisor);
     glEnableVertexAttribArray(layout);
     DEV_LOG("Written buffer ", layout);
@@ -370,30 +406,30 @@ void glWrap::Mesh::SetAttributeData(std::vector<float>& data, unsigned int size,
     glBindVertexArray(0);
 }
 
-void glWrap::Mesh::SetAttributeData(std::vector<float>& data, unsigned int size, unsigned int layout){
+void glWrap::Mesh::SetAttributeData(std::vector<unsigned char>& data, unsigned int size, unsigned int type, unsigned int layout){
     glBindVertexArray(m_VAO);
 
     if (m_buffers.size() <= layout){
         m_buffers.resize(layout + 1);
         glGenBuffers(1, &m_buffers[layout]);
-        glBindBuffer(GL_ARRAY_BUFFER, m_buffers[layout]);
         DEV_LOG("Increased attributes to ", m_buffers.size());
     }
     else if ( m_buffers[layout] == 0 ) {
         glGenBuffers(1, &m_buffers[layout]);
-        glBindBuffer(GL_ARRAY_BUFFER, m_buffers[layout]);
         DEV_LOG("Generating buffer ", layout);
     }
+    
+    glBindBuffer(GL_ARRAY_BUFFER, m_buffers[layout]);
 
-    glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), data.data(), GL_STATIC_DRAW);
-    glVertexAttribPointer(layout, size, GL_FLOAT, GL_FALSE, size * sizeof(float), (void*)0);
+    glBufferData(GL_ARRAY_BUFFER, data.size(), data.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(layout, size, type, GL_FALSE, size * sizeof(float), (void*)0);
     glEnableVertexAttribArray(layout);
     DEV_LOG("Written buffer ", layout);
 
     glBindVertexArray(0);
 }
 
-void glWrap::Mesh::SetIndexData(std::vector<unsigned short>& indices){
+void glWrap::Mesh::SetIndexData(std::vector<unsigned char>& indices){
     DEV_LOG("Binding VAO", "");
     glBindVertexArray(m_VAO);
 
@@ -405,10 +441,10 @@ void glWrap::Mesh::SetIndexData(std::vector<unsigned short>& indices){
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
     DEV_LOG("EBO bound ", m_EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GL_UNSIGNED_SHORT), indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() /* * sizeof(GL_UNSIGNED_SHORT)*/, indices.data(), GL_STATIC_DRAW);
     DEV_LOG("EBO set ", m_EBO);
 
-    m_indexAmount = indices.size();
+    m_indexAmount = indices.size() / sizeof(unsigned short);
 }
 
 void glWrap::Mesh::Draw(){
@@ -452,13 +488,13 @@ void glWrap::Model::SetModelData(ModelData& model){
         for (int j{}; j < meshData.attributes.size(); ++j){
             DEV_LOG("Attribute: ", j);
             AttributeData& attributeData = meshData.attributes[j];
-            mesh.SetAttributeData(attributeData.data, attributeData.size, j);
+            mesh.SetAttributeData(attributeData.data, attributeData.size, attributeData.type, j);
         }
     }
 }
 
-void glWrap::Model::SetModelAttribute(std::vector<float>& data, unsigned int size, unsigned int layout, unsigned int divisor, GLenum drawtype){
-    for (auto& mesh : m_meshes) mesh.SetAttributeData(data, size, layout, divisor, drawtype);
+void glWrap::Model::SetModelAttribute(std::vector<unsigned char>& data, unsigned int size, unsigned int type, unsigned int layout, unsigned int divisor, GLenum drawtype){
+    for (auto& mesh : m_meshes) mesh.SetAttributeData(data, size, type, layout, divisor, drawtype);
 }
 
 void glWrap::Model::Draw(){
@@ -598,7 +634,7 @@ void glWrap::Window::frameCall(GLFWwindow* window, int width, int height){
     m_size = {width, height};
 }
 
-void glWrap::Window::LoadGLTF(std::map<std::string, ModelData>& modelContainer, std::map<std::string, Skeleton>& skeletonContainer, std::string file){
+void glWrap::Window::LoadGLTF(std::map<std::string, ModelData>& modelContainer, std::map<std::string, Skin>& skinContainer, std::string file){
 
     tinygltf::TinyGLTF loader;
     tinygltf::Model model;
@@ -627,48 +663,54 @@ void glWrap::Window::LoadGLTF(std::map<std::string, ModelData>& modelContainer, 
             current_model.meshes.push_back(MeshData());
             MeshData& current_mesh = current_model.meshes.back();
 
+            GetBufferData(model.accessors.at(current_gltfPrimitive.indices), model, current_mesh.indices);
+
             GetAttributeData(model, current_gltfPrimitive, "POSITION", current_mesh);
 
-            unsigned int vertices = current_mesh.attributes[0].data.size() / 3;
-            DEV_LOG("Vertices: ", vertices);
-
-            if (current_gltfPrimitive.attributes.count("NORMAL")){
-                GetAttributeData(model, current_gltfPrimitive, "NORMAL", current_mesh);
+            // if (current_gltfPrimitive.attributes.count("NORMAL")){
+            GetAttributeData(model, current_gltfPrimitive, "NORMAL", current_mesh);
+            /*
             }
             else {
                 current_mesh.attributes.push_back(AttributeData{});
                 current_mesh.attributes.back().data.resize( vertices * 3 );
                 current_mesh.attributes.back().size = 3;
+                current_mesh.attributes.back().type = 5126;
             }
+            */
 
-            if (current_gltfPrimitive.attributes.count("TEXCOORD_0")){
-                GetAttributeData(model, current_gltfPrimitive, "TEXCOORD_0", current_mesh);
+            // if (current_gltfPrimitive.attributes.count("TEXCOORD_0")){
+            GetAttributeData(model, current_gltfPrimitive, "TEXCOORD_0", current_mesh);
+            /*
             }
             else {
                 current_mesh.attributes.push_back(AttributeData{});
                 current_mesh.attributes.back().data.resize( vertices * 2 );
                 current_mesh.attributes.back().size = 2;
+                current_mesh.attributes.back().type = 5126;
             }
+            */
 
             if (current_gltfPrimitive.attributes.count("COLOR_0")){
                 GetAttributeData(model, current_gltfPrimitive, "COLOR_0", current_mesh);
             }
             else {
                 current_mesh.attributes.push_back(AttributeData{});
-                current_mesh.attributes.back().data.resize( vertices * 3 );
+                current_mesh.attributes.back().data.resize(current_mesh.attributes[0].data.size());
                 current_mesh.attributes.back().size = 3;
+                current_mesh.attributes.back().size = 5126;
+                DEV_LOG("Bytes: ", current_mesh.attributes[0].data.size());
             }
 
             if (current_gltfPrimitive.attributes.count("JOINTS_0")){
                 GetAttributeData(model, current_gltfPrimitive, "JOINTS_0", current_mesh);
 
-                if (current_gltfPrimitive.attributes.count("WEIGHTS_0")){
-                    GetAttributeData(model, current_gltfPrimitive, "WEIGHTS_0", current_mesh);
-                }
+                // if (current_gltfPrimitive.attributes.count("WEIGHTS_0")){
+                GetAttributeData(model, current_gltfPrimitive, "WEIGHTS_0", current_mesh);
+                // }
             }
-            GetIndexData(model, current_gltfPrimitive, current_mesh.indices);
 
-            }
+        }
     }
 
     for (int i{}; i < model.skins.size(); ++i){
@@ -676,14 +718,25 @@ void glWrap::Window::LoadGLTF(std::map<std::string, ModelData>& modelContainer, 
         tinygltf::Skin& current_gltfSkin = model.skins[i];
         DEV_LOG("Skin: ", current_gltfSkin.name);
 
-        int postfix{0};
-        while (modelContainer.count(model.skins[i].name + "." + std::to_string(postfix))) ++postfix;
+        skinContainer[current_gltfSkin.name] = Skin{};
+        Skin& current_skin = skinContainer[current_gltfSkin.name];
 
-        skeletonContainer.emplace(model.skins[i].name + "." + std::to_string(postfix), Skeleton{});
-        Skeleton& current_skeleton = skeletonContainer[model.skins[i].name + "." + std::to_string(postfix)];
+        // for (int j{}; j < current_gltfSkin.joints.size(); ++j){
+        for (auto& tinygltf_joint : current_gltfSkin.joints){
 
-        for (int j{}; j < current_gltfSkin.joints.size(); ++j){
+            current_skin.m_joints.push_back(Joint{});
+            Joint& current_joint = current_skin.m_joints.back();
+            tinygltf::Node& current_gltfjoint = model.nodes.at(tinygltf_joint);
 
+            current_joint.m_name = current_gltfjoint.name;
+            
+            // current_joint.m_offset = model.accessors.at(current_gltfSkin.inverseBindMatrices).
+
+            // GetSkinMatrix(model, current_gltfSkin, tinygltf_joint, current_joint);
+
+            for (auto& child : current_gltfjoint.children){
+                current_joint.m_children.push_back(child);
+            }
         }
     }
 

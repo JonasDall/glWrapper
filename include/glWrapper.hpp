@@ -12,10 +12,6 @@
 #include "glad.h"
 #include "glfw3.h"
 #include "glm.hpp"
-// #include "glm/gtc/matrix_transform.hpp"
-// #include "glm/gtc/type_ptr.hpp"
-// #include "tinygltf/tinygltf.hpp"
-// #include "tinygltf/stb_image.h"
 
 struct GLFWwindow;
 
@@ -23,13 +19,14 @@ namespace glWrap
 {
 
     struct AttributeData{
-        std::vector<float> data;
+        std::vector<unsigned char> data;
         unsigned int size{};
+        unsigned int type{};
     };
 
     struct MeshData{
         std::vector<AttributeData> attributes;
-        std::vector<unsigned short> indices;
+        std::vector<unsigned char> indices;
     };
 
     struct ModelData{
@@ -123,10 +120,10 @@ namespace glWrap
 
         Mesh();
         // void SetMeshData(MeshData& mesh);
-        void SetAttributeData(std::vector<float>& data, unsigned int size, unsigned int layout, unsigned int divisor, GLenum drawtype);
-        void SetAttributeData(std::vector<float>& data, unsigned int size, unsigned int layout);
+        void SetAttributeData(std::vector<unsigned char>& data, unsigned int size, unsigned int type, unsigned int layout, unsigned int divisor, GLenum drawtype);
+        void SetAttributeData(std::vector<unsigned char>& data, unsigned int size, unsigned int type, unsigned int layout);
 
-        void SetIndexData(std::vector<unsigned short>& indices);
+        void SetIndexData(std::vector<unsigned char>& indices);
         void Draw();
         void Draw(unsigned int count);
     };
@@ -136,7 +133,7 @@ namespace glWrap
         std::vector<Mesh> m_meshes;
 
         void SetModelData(ModelData& model);
-        void SetModelAttribute(std::vector<float>& data, unsigned int size, unsigned int layout, unsigned int divisor, GLenum drawtype);
+        void SetModelAttribute(std::vector<unsigned char>& data, unsigned int size, unsigned int type, unsigned int layout, unsigned int divisor, GLenum drawtype);
         void Draw();
         void Draw(unsigned int count);
     };
@@ -145,18 +142,17 @@ namespace glWrap
 
     };
 
-    class Bone{
+    class Joint{
     public:
         std::string m_name;
-        glm::vec3 m_localPos;
-        glm::vec4 m_localRot;
-        glm::vec3 m_localScl;
+        glm::mat4 m_offset;
         std::vector<unsigned int> m_parent;
         std::vector<unsigned int> m_children;
     };
 
-    class Skeleton{
-        std::vector<Bone> m_bones;
+    class Skin{
+    public:
+        std::vector<Joint> m_joints;
     };
 
     class Window{
@@ -187,7 +183,7 @@ namespace glWrap
         void Swap();
         // void Draw(Copy& copy);
         float GetDeltaTime();
-        void LoadGLTF(std::map<std::string, ModelData>& modelContainer, std::map<std::string, Skeleton>& skeletonContainer, std::string file);
+        void LoadGLTF(std::map<std::string, ModelData>& modelContainer, std::map<std::string, Skin>& SkinContainer, std::string file);
         ~Window();
 
         bool IsKeyPressed(unsigned int key);
