@@ -20,6 +20,7 @@ PRIVATE "${CMAKE_SOURCE_DIR}/libs/"
 PRIVATE "${CMAKE_SOURCE_DIR}/libs/gl"
 PRIVATE "${CMAKE_SOURCE_DIR}/libs/glm"
 PRIVATE "${CMAKE_SOURCE_DIR}/libs/tinygltf"
+# PRIVATE "${CMAKE_SOURCE_DIR}/libs/openal"
 PRIVATE "${CMAKE_SOURCE_DIR}/include"
 )
 

@@ -126,6 +126,8 @@ namespace glWrap
         void SetIndexData(std::vector<unsigned char>& indices);
         void Draw();
         void Draw(unsigned int count);
+
+        ~Mesh();
     };
 
     class Model{
@@ -138,8 +140,15 @@ namespace glWrap
         void Draw(unsigned int count);
     };
 
-    class Animation{
+    class Pose{
+        float m_time;
+        glm::vec3 m_position;
+        glm::vec4 m_rotation;
+        glm::vec3 m_scale;
+    };
 
+    class Animation{
+        
     };
 
     class Joint{
@@ -153,6 +162,7 @@ namespace glWrap
     class Skin{
     public:
         std::vector<Joint> m_joints;
+        std::map<std::string, Animation> m_animations;
     };
 
     class Window{

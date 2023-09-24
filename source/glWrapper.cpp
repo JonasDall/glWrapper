@@ -93,9 +93,10 @@ static void CreateShader(unsigned int &id, GLenum type, std::string code){
     return;
 }
 
-void GetBufferData(tinygltf::Accessor& accessor, tinygltf::Model& model, std::vector<unsigned char>& vector){
+void GetBufferData(/*tinygltf::Accessor&*/ int accessor, tinygltf::Model& model, std::vector<unsigned char>& vector){
 
-    tinygltf::BufferView view = model.bufferViews[accessor.bufferView];
+    tinygltf::Accessor tinygltf_accessor = model.accessors[accessor];
+    tinygltf::BufferView view = model.bufferViews[tinygltf_accessor.bufferView];
     int byteOffset = view.byteOffset;
     int byteLength = view.byteLength;
     vector.resize(byteLength);
@@ -114,9 +115,10 @@ void GetAttributeData(tinygltf::Model& model, tinygltf::Primitive& primitive, st
     mesh.attributes.back().type = model.accessors.at(primitive.attributes.at(target)).componentType;
     DEV_LOG("ComponentType: ", model.accessors.at(primitive.attributes.at(target)).componentType);
 
-    GetBufferData(model.accessors.at(primitive.attributes.at(target)), model, mesh.attributes.back().data);
+    GetBufferData(primitive.attributes.at(target), model, mesh.attributes.back().data);
 }
 
+/*
 void GetIndexData(tinygltf::Model& model, tinygltf::Primitive& primitive, std::vector<unsigned short>& container){
 
     tinygltf::BufferView view = model.bufferViews[model.accessors[primitive.indices].bufferView];
@@ -135,6 +137,7 @@ void GetIndexData(tinygltf::Model& model, tinygltf::Primitive& primitive, std::v
 
     return;
 }
+*/
 
 static GLenum GetChannelType(unsigned int channels){
     switch(channels)
@@ -471,6 +474,19 @@ void glWrap::Model::Draw(unsigned int count){
     }
 }
 
+glWrap::Mesh::~Mesh(){
+    for (auto& buffer : m_buffers){
+        if (buffer != 0){
+            glDeleteBuffers(1, &buffer);
+        }
+    }
+
+    m_buffers.clear();
+
+    if (m_EBO != 0) glDeleteBuffers(1, &m_EBO);
+    glDeleteBuffers(1, &m_VAO);
+}
+
 // 
 // *Window
 // 
@@ -625,7 +641,7 @@ void glWrap::Window::LoadGLTF(std::map<std::string, ModelData>& modelContainer, 
             current_model.meshes.push_back(MeshData());
             MeshData& current_mesh = current_model.meshes.back();
 
-            GetBufferData(model.accessors.at(current_gltfPrimitive.indices), model, current_mesh.indices);
+            GetBufferData(current_gltfPrimitive.indices, model, current_mesh.indices);
 
             GetAttributeData(model, current_gltfPrimitive, "POSITION", current_mesh);
 
@@ -684,13 +700,17 @@ void glWrap::Window::LoadGLTF(std::map<std::string, ModelData>& modelContainer, 
         Skin& current_skin = skinContainer[current_gltfSkin.name];
 
         std::vector<unsigned char> tempMatrixData;
-        GetBufferData(model.accessors[current_gltfSkin.inverseBindMatrices], model, tempMatrixData);
+        GetBufferData(current_gltfSkin.inverseBindMatrices, model, tempMatrixData);
 
         std::vector<glm::mat4> matrixData;
         matrixData.resize(tempMatrixData.size() / sizeof(glm::mat4));
         std::memcpy(matrixData.data(), tempMatrixData.data(), tempMatrixData.size());
 
+        std::vector<int> skinJoints;
+
         for (auto& tinygltf_joint : current_gltfSkin.joints){
+
+            skinJoints.push_back(tinygltf_joint);
 
             current_skin.m_joints.push_back(Joint{});
             Joint& current_joint = current_skin.m_joints.back();
@@ -701,6 +721,26 @@ void glWrap::Window::LoadGLTF(std::map<std::string, ModelData>& modelContainer, 
 
             for (auto& child : current_gltfjoint.children){
                 current_joint.m_children.push_back(child);
+            }
+        }
+
+        for (auto& animation : model.animations){
+            if (std::find(skinJoints.begin(), skinJoints.end(), animation.channels[0].target_node) != skinJoints.end()){
+                DEV_LOG("Skin has animation: ", animation.name);
+                // for (auto& channels)
+
+                current_skin.m_animations[animation.name] = Animation{};
+                Animation& current_animation = current_skin.m_animations[animation.name];
+
+                for (auto& sampler : animation.samplers){
+
+                    std::vector<unsigned char> time;
+                    
+                    GetBufferData(sampler.input, model, time);
+
+                    DEV_LOG("Time: ", sampler.input);
+
+                }
             }
         }
     }
