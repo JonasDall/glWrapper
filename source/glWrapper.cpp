@@ -738,8 +738,13 @@ void glWrap::Window::LoadGLTF(std::map<std::string, ModelData>& modelContainer, 
                     
                     GetBufferData(sampler.input, model, time);
 
-                    DEV_LOG("Time: ", sampler.input);
+                    std::vector<float> timeFixed;
+                    timeFixed.resize(time.size() / sizeof(float));
+                    std::memcpy(timeFixed.data(), time.data(), time.size());
 
+                    for (float& newTime : timeFixed){
+                        DEV_LOG("", newTime);
+                    }
                 }
             }
         }
